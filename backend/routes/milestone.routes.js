@@ -18,5 +18,8 @@ router.post('/respond', verifyToken, checkRole(['Client', 'Admin']), milestoneCo
 // Admin/Team: Delete/Withdraw a milestone request (reset to Not Submitted)
 router.delete('/:id', verifyToken, checkRole(['Admin', 'Team Member']), milestoneController.deleteMilestoneRequest);
 
+// Admin/Team: Edit a milestone
+router.put('/:id', verifyToken, checkRole(['Admin', 'Team Member']), milestoneController.editMilestone);
+
 module.exports = router;
 

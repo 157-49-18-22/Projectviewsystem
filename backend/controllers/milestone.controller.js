@@ -171,3 +171,15 @@ exports.deleteMilestoneRequest = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+exports.editMilestone = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { milestone_name, description } = req.body;
+        await pool.query('UPDATE milestone_approvals SET milestone_name = ?, description = ? WHERE id = ?', [milestone_name, description, id]);
+        res.json({ message: 'Milestone updated successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

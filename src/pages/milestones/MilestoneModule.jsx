@@ -19,6 +19,10 @@ const MilestoneModule = () => {
     const [showCreate, setShowCreate] = useState(false);
     const [showRespond, setShowRespond] = useState(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const [showEdit, setShowEdit] = useState(null);
+    const [showView, setShowView] = useState(null);
+    const [editData, setEditData] = useState({ milestone_name: '', description: '' });
+
 
     const [formData, setFormData] = useState({ project_id: '', milestone_id: '', description: '' });
     const [respondData, setRespondData] = useState({ status: '', client_remarks: '' });
@@ -309,8 +313,8 @@ const MilestoneModule = () => {
                                                     borderRadius: '8px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', 
                                                     minWidth: '150px', overflow: 'hidden'
                                                 }}>
-                                                    <button onClick={() => { alert('View Details clicked'); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>View Details</button>
-                                                    <button onClick={() => { alert('Edit clicked'); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>Edit Milestone</button>
+                                                    <button onClick={() => { setShowView(m); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>View Details</button>
+                                                    <button onClick={() => { setShowEdit(m); setEditData({ milestone_name: m.milestone_name, description: m.description || '' }); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>Edit Milestone</button>
                                                     <button onClick={() => { handleDelete(m.id); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.85rem' }}>Delete</button>
                                                 </div>
                                             )}
@@ -437,6 +441,78 @@ const MilestoneModule = () => {
                             <button type="submit" className="btn-primary" disabled={!respondData.status} style={{ marginTop: '0.5rem', padding: '0.75rem', fontWeight: 600 }}>
                                 Submit Response
                             </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* View Details Modal */}
+            {showView && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3>Milestone Details</h3>
+                            <button onClick={() => setShowView(null)} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Milestone Name</label>
+                                <p style={{ fontWeight: 600, fontSize: '1.1rem', margin: '0.25rem 0' }}>{showView.milestone_name}</p>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Project</label>
+                                <p style={{ fontWeight: 500, margin: '0.25rem 0' }}>{showView.project_name}</p>
+                            </div>
+                            {showView.description && (
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
+                                <div style={{ background: 'var(--bg-main)', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem' }}>
+                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{showView.description}</p>
+                                </div>
+                            </div>
+                            )}
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Status</label>
+                                <span style={{ display: 'inline-block', padding: '0.25rem 0.5rem', borderRadius: '8px', background: 'var(--bg-main)', fontWeight: 600, marginTop: '0.25rem' }}>{showView.status}</span>
+                            </div>
+                            {showView.client_remarks && (
+                            <div>
+                                <label style={{ display: 'block', color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 600 }}>Client Remarks</label>
+                                <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', padding: '1rem', borderRadius: '8px', marginTop: '0.5rem', color: 'var(--danger)' }}>
+                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{showView.client_remarks}</p>
+                                </div>
+                            </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Milestone Modal */}
+            {showEdit && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3>Edit Milestone</h3>
+                            <button onClick={() => setShowEdit(null)} style={{ background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
+                        <form onSubmit={submitEdit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Milestone Name</label>
+                                <input required className="input-field" type="text"
+                                    value={editData.milestone_name}
+                                    onChange={(e) => setEditData({ ...editData, milestone_name: e.target.value })} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Description</label>
+                                <textarea className="input-field" rows="4" 
+                                    value={editData.description}
+                                    onChange={(e) => setEditData({ ...editData, description: e.target.value })}></textarea>
+                            </div>
+                            <div style={{ display: 'flex', justifySelf: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
+                                <button type="button" onClick={() => setShowEdit(null)} className="btn-secondary" style={{ padding: '0.75rem 1.5rem', fontWeight: 600 }}>Cancel</button>
+                                <button type="submit" className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontWeight: 600 }}>Save Changes</button>
+                            </div>
                         </form>
                     </div>
                 </div>
