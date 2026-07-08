@@ -75,13 +75,13 @@ const MilestoneModule = () => {
         e.preventDefault();
         try {
             await axios.post(`${API}/milestones/request`, formData, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Milestone submitted for client approval! Client has been notified.');
+            alert('âœ… Milestone submitted for client approval! Client has been notified.');
             setShowCreate(false);
             setFormData({ project_id: '', milestone_id: '', description: '' });
             setProjectMilestones([]);
             fetchMilestones();
         } catch (err) {
-            alert('❌ ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -102,12 +102,12 @@ const MilestoneModule = () => {
                 status: respondData.status,
                 client_remarks: respondData.client_remarks
             }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Response submitted!');
+            alert('âœ… Response submitted!');
             setShowRespond(null);
             setRespondData({ status: '', client_remarks: '' });
             fetchMilestones();
         } catch (err) {
-            alert('❌ ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -115,10 +115,10 @@ const MilestoneModule = () => {
         if (!window.confirm('Are you sure you want to delete this milestone request? It will be reverted back and appear in the dropdown again.')) return;
         try {
             await axios.delete(`${API}/milestones/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Milestone request deleted.');
+            alert('âœ… Milestone request deleted.');
             fetchMilestones();
         } catch (err) {
-            alert('❌ ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -314,7 +314,6 @@ const MilestoneModule = () => {
                                                     minWidth: '150px', overflow: 'hidden'
                                                 }}>
                                                     <button onClick={() => { setShowView(m); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>View Details</button>
-                                                    <button onClick={() => { setShowEdit(m); setEditData({ milestone_name: m.milestone_name, description: m.description || '' }); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>Edit Milestone</button>
                                                     <button onClick={() => { handleDelete(m.id); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.85rem' }}>Delete</button>
                                                 </div>
                                             )}
@@ -522,3 +521,4 @@ const MilestoneModule = () => {
 };
 
 export default MilestoneModule;
+

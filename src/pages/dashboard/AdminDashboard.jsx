@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, CreditCard, FolderKanban, DollarSign } from 'lucide-react';
+import { Users, FileText, CreditCard, FolderKanban, DollarSign, Plus, Search, Filter, UserPlus, Calendar, History } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const API = 'http://localhost:5000/api';
 
@@ -15,6 +16,7 @@ const AdminDashboard = () => {
     const [recentClients, setRecentClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const token = localStorage.getItem('token');
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchDashboardData();
@@ -70,9 +72,7 @@ const AdminDashboard = () => {
                     <h3 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem 0', color: 'var(--text-main)', fontFamily: 'Hanken Grotesk, sans-serif' }}>Admin Dashboard</h3>
                     <p style={{ margin: 0, color: 'var(--text-muted)' }}>Welcome back. Here is what's happening with your clients today.</p>
                 </div>
-                <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', borderRadius: '10px', fontWeight: 600, boxShadow: '0 8px 16px rgba(99,102,241,0.2)' }}>
-                    <Plus size={20} /> New Report
-                </button>
+                
             </div>
 
             {/* Bento Grid Stats */}
@@ -153,7 +153,7 @@ const AdminDashboard = () => {
                                 <th style={{ padding: '1rem 2rem', fontWeight: 700 }}>Contact</th>
                                 <th style={{ padding: '1rem 2rem', fontWeight: 700 }}>Email</th>
                                 <th style={{ padding: '1rem 2rem', fontWeight: 700 }}>Status</th>
-                                <th style={{ padding: '1rem 2rem', fontWeight: 700 }}>Actions</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -183,9 +183,7 @@ const AdminDashboard = () => {
                                             {client.status}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1.25rem 2rem' }}>
-                                        <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>...</button>
-                                    </td>
+                                    
                                 </tr>
                             ))}
                         </tbody>
@@ -207,19 +205,19 @@ const AdminDashboard = () => {
                 <div style={{ gridColumn: 'span 2', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem' }}>
                     <h5 style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Quick Actions</h5>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem' }}>
-                        <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        <button onClick={() => navigate('/clients')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-color)'; e.currentTarget.style.color = 'white'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-main)'; e.currentTarget.style.color = 'var(--text-main)'; }}>
                             <UserPlus size={24} />
                             <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>Add Client</span>
                         </button>
-                        <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        <button onClick={() => navigate('/invoices')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-color)'; e.currentTarget.style.color = 'white'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-main)'; e.currentTarget.style.color = 'var(--text-main)'; }}>
                             <FileText size={24} />
                             <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>New Invoice</span>
                         </button>
-                        <button style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        <button onClick={() => navigate('/milestones')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem', background: 'var(--bg-main)', border: 'none', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}
                             onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-color)'; e.currentTarget.style.color = 'white'; }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-main)'; e.currentTarget.style.color = 'var(--text-main)'; }}>
                             <Calendar size={24} />
@@ -239,7 +237,7 @@ const AdminDashboard = () => {
                             <div style={{ width: '4px', background: 'var(--primary-color)', borderRadius: '4px' }}></div>
                             <div>
                                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>System updated statuses</p>
-                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now • by System</p>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now â€¢ by System</p>
                             </div>
                         </div>
                     </div>
@@ -251,3 +249,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
