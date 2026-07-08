@@ -37,7 +37,10 @@ exports.createClient = async (req, res) => {
 
         await connection.commit();
 
-        // 5. Send onboarding email
+        // 5. Send onboarding email - NON-BLOCKING (background)
+        res.status(201).json({ message: 'Client created successfully and onboarding email sent.', clientId });
+
+        // Fire and forget - don't await
         const loginUrl = `${process.env.FRONTEND_URL}/login`;
         const emailSubject = 'Welcome to Maydiv Dashboard - Your Account Credentials';
         const emailHtml = `
@@ -48,18 +51,15 @@ exports.createClient = async (req, res) => {
             <p><strong>Temporary Password:</strong> ${generatedPassword}</p>
             <p>For security reasons, you will be prompted to reset your password when you log in for the first time.</p>
         `;
+        sendEmail(email, emailSubject, 'Welcome to Maydiv Dashboard', emailHtml).catch(console.error);
 
-        const emailSent = await sendEmail(email, emailSubject, 'Welcome to Maydiv Dashboard', emailHtml);
-        
-        // 6. Create notification
-        await notificationController.createNotification(
+        // 6. Create notification (background)
+        notificationController.createNotification(
             clientId,
             'Credentials sent to new client',
             null,
             `Welcome email sent to ${contact_person} at ${email}`
-        );
-
-        res.status(201).json({ message: 'Client created successfully and onboarding email sent.', clientId });
+        ).catch(console.error);
     } catch (err) {
         await connection.rollback();
         console.error(err);
