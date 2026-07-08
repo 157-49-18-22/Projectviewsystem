@@ -1,29 +1,23 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    family: 4,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, text, html) => {
     try {
-        const mailOptions = {
-            from: `"Maydiv Dashboard" <${process.env.EMAIL_USER}>`,
-            to,
+        const { data, error } = await resend.emails.send({
+            from: 'Maydiv Dashboard <onboarding@resend.dev>',
+            to: [to],
             subject,
-            text,
-            html
-        };
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email sent: ' + info.response);
+            html: html || `<p>${text}</p>`
+        });
+
+        if (error) {
+            console.error('Resend error:', error);
+            return false;
+        }
+
+        console.log('Email sent via Resend:', data?.id);
         return true;
     } catch (error) {
         console.error('Error sending email:', error);
