@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { FolderKanban, FileText, CreditCard, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const ClientDashboard = () => {
     const [stats, setStats] = useState({
@@ -159,3 +159,4 @@ const ClientDashboard = () => {
 };
 
 export default ClientDashboard;
+

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Plus, X, CheckCircle2, Clock, AlertCircle, Search, Folder, User as UserIcon, Calendar, MoreVertical, DollarSign, Pickaxe } from 'lucide-react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const statusConfig = {
     'Not Submitted':    { color: 'var(--text-muted)', icon: <Clock size={20} />, bg: 'rgba(100,100,100,0.1)', border: '#9ca3af' },
@@ -75,13 +75,13 @@ const MilestoneModule = () => {
         e.preventDefault();
         try {
             await axios.post(`${API}/milestones/request`, formData, { headers: { Authorization: `Bearer ${token}` } });
-            alert('âœ… Milestone submitted for client approval! Client has been notified.');
+            alert('Ã¢Å“â€¦ Milestone submitted for client approval! Client has been notified.');
             setShowCreate(false);
             setFormData({ project_id: '', milestone_id: '', description: '' });
             setProjectMilestones([]);
             fetchMilestones();
         } catch (err) {
-            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
+            alert('Ã¢ÂÅ’ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -102,12 +102,12 @@ const MilestoneModule = () => {
                 status: respondData.status,
                 client_remarks: respondData.client_remarks
             }, { headers: { Authorization: `Bearer ${token}` } });
-            alert('âœ… Response submitted!');
+            alert('Ã¢Å“â€¦ Response submitted!');
             setShowRespond(null);
             setRespondData({ status: '', client_remarks: '' });
             fetchMilestones();
         } catch (err) {
-            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
+            alert('Ã¢ÂÅ’ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -115,10 +115,10 @@ const MilestoneModule = () => {
         if (!window.confirm('Are you sure you want to delete this milestone request? It will be reverted back and appear in the dropdown again.')) return;
         try {
             await axios.delete(`${API}/milestones/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-            alert('âœ… Milestone request deleted.');
+            alert('Ã¢Å“â€¦ Milestone request deleted.');
             fetchMilestones();
         } catch (err) {
-            alert('âŒ ' + (err.response?.data?.message || 'Server error'));
+            alert('Ã¢ÂÅ’ ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -521,4 +521,5 @@ const MilestoneModule = () => {
 };
 
 export default MilestoneModule;
+
 

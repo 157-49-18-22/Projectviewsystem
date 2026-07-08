@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Eye, X } from 'lucide-react';
 import axios from 'axios';
 import './ClientManagement.css';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const ClientManagement = () => {
     const [showModal, setShowModal] = useState(false);
@@ -45,13 +45,13 @@ const ClientManagement = () => {
             await axios.post(`${API}/clients`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('✅ Client Created! Welcome email sent to ' + formData.email);
+            alert('âœ… Client Created! Welcome email sent to ' + formData.email);
             setFormData({ company_name: '', contact_person: '', phone: '', email: '' });
             setShowModal(false);
             fetchClients(); // Refresh table with real data
         } catch (error) {
             const msg = error.response?.data?.message || 'Server error. Check backend.';
-            alert('❌ Error: ' + msg);
+            alert('âŒ Error: ' + msg);
         } finally {
             setLoading(false);
         }
@@ -80,14 +80,14 @@ const ClientManagement = () => {
             await axios.put(`${API}/clients/${selectedClient.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('✅ Client Updated Successfully!');
+            alert('âœ… Client Updated Successfully!');
             setFormData({ company_name: '', contact_person: '', phone: '', email: '' });
             setShowEditModal(false);
             setSelectedClient(null);
             fetchClients();
         } catch (error) {
             const msg = error.response?.data?.message || 'Server error. Check backend.';
-            alert('❌ Error: ' + msg);
+            alert('âŒ Error: ' + msg);
         } finally {
             setLoading(false);
         }
@@ -99,13 +99,13 @@ const ClientManagement = () => {
             await axios.delete(`${API}/clients/${selectedClient.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('✅ Client Deleted Successfully!');
+            alert('âœ… Client Deleted Successfully!');
             setShowDeleteModal(false);
             setSelectedClient(null);
             fetchClients();
         } catch (error) {
             const msg = error.response?.data?.message || 'Server error. Check backend.';
-            alert('❌ Error: ' + msg);
+            alert('âŒ Error: ' + msg);
         } finally {
             setLoading(false);
         }
@@ -358,3 +358,4 @@ const ClientManagement = () => {
 };
 
 export default ClientManagement;
+

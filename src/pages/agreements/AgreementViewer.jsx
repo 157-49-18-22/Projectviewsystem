@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Download, PenTool, CheckCircle, Clock, Upload, Send, Users, RotateCcw, ChevronLeft, ChevronRight, Filter, Plus, Verified, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
@@ -38,7 +38,7 @@ const AgreementViewer = () => {
     const fetchClients = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/clients', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/clients', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClients(res.data);
@@ -50,7 +50,7 @@ const AgreementViewer = () => {
     const fetchAllAgreements = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/agreements/all', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/agreements/all', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAllAgreements(res.data);
@@ -62,7 +62,7 @@ const AgreementViewer = () => {
     const fetchClientAgreements = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/agreements/my-agreements', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/agreements/my-agreements', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClientAgreements(res.data);
@@ -86,7 +86,7 @@ const AgreementViewer = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/agreements/sign', 
+            await axios.post('https://projectviewsystem.onrender.com/api/agreements/sign', 
                 { 
                     agreement_id: currentAgreement.id, 
                     signature_data: signatureData 
@@ -128,7 +128,7 @@ const AgreementViewer = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/agreements/upload', formData, {
+            await axios.post('https://projectviewsystem.onrender.com/api/agreements/upload', formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -510,3 +510,4 @@ const AgreementViewer = () => {
 };
 
 export default AgreementViewer;
+

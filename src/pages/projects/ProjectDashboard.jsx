@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Plus, X, Calendar, User, FolderKanban, Users, Flag, CheckCircle, Clock, AlertCircle, Eye, Trash } from 'lucide-react';
 import axios from 'axios';
 import './ProjectDashboard.css';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const ProjectDashboard = () => {
     const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -89,14 +89,14 @@ const ProjectDashboard = () => {
         try {
             const res = await axios.post(`${API}/projects`, formData, { headers: { Authorization: `Bearer ${token}` } });
             
-            alert('✅ Project created successfully!');
+            alert('âœ… Project created successfully!');
             setShowModal(false);
             setFormData({ client_id: '', project_name: '', start_date: '', end_date: '', milestones: [], team_members: [] });
             setNewMilestone({ name: '', description: '' });
             setNewTeamMember({ name: '', designation: '' });
             fetchProjects();
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -134,12 +134,12 @@ const ProjectDashboard = () => {
         e.preventDefault();
         try {
             await axios.post(`${API}/projects/assign`, teamForm, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Team member assigned successfully!');
+            alert('âœ… Team member assigned successfully!');
             setShowTeamModal(false);
             setTeamForm({ project_id: '', user_id: '', role: '' });
             fetchProjectDetails(teamForm.project_id);
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -147,13 +147,13 @@ const ProjectDashboard = () => {
         e.preventDefault();
         try {
             await axios.post(`${API}/projects/${milestoneForm.project_id}/milestones`, milestoneForm, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Milestone created successfully!');
+            alert('âœ… Milestone created successfully!');
             setShowMilestoneModal(false);
             setMilestoneForm({ project_id: '', milestone_name: '', description: '', attachment_url: '' });
             fetchProjects();
             if (selectedProject) fetchProjectDetails(selectedProject);
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -167,7 +167,7 @@ const ProjectDashboard = () => {
             fetchProjectDetails(selectedProject);
             alert(`Milestone ${status} successfully!`);
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -176,11 +176,11 @@ const ProjectDashboard = () => {
         
         try {
             await axios.post(`${API}/projects/${selectedProject}/complete`, {}, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Project marked as complete!');
+            alert('âœ… Project marked as complete!');
             setProjectDetails(null);
             fetchProjects();
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -189,11 +189,11 @@ const ProjectDashboard = () => {
         
         try {
             await axios.delete(`${API}/projects/${selectedProject}`, { headers: { Authorization: `Bearer ${token}` } });
-            alert('✅ Project deleted successfully!');
+            alert('âœ… Project deleted successfully!');
             setProjectDetails(null);
             fetchProjects();
         } catch (err) {
-            alert('❌ Error: ' + (err.response?.data?.message || 'Server error'));
+            alert('âŒ Error: ' + (err.response?.data?.message || 'Server error'));
         }
     };
 
@@ -580,7 +580,7 @@ const ProjectDashboard = () => {
                                             )}
                                             {prog.pct === 100 && (
                                                 <div style={{ display:'flex', alignItems:'center', gap:'0.4rem', padding:'0.4rem 0.9rem', borderRadius:'20px', background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.4)' }}>
-                                                    <span style={{ fontSize:'0.85rem', color:'#10b981', fontWeight:700 }}>🎉 All Done!</span>
+                                                    <span style={{ fontSize:'0.85rem', color:'#10b981', fontWeight:700 }}>ðŸŽ‰ All Done!</span>
                                                 </div>
                                             )}
                                         </div>
@@ -840,4 +840,5 @@ const ProjectDashboard = () => {
 };
 
 export default ProjectDashboard;
+
 

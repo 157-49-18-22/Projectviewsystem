@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import axios from 'axios';
@@ -20,7 +20,7 @@ const Login = () => {
         setError('');
         
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', credentials);
+            const res = await axios.post('https://projectviewsystem.onrender.com/api/auth/login', credentials);
             // Save token
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -71,7 +71,7 @@ const Login = () => {
                             <input 
                                 type="password" 
                                 name="password" 
-                                placeholder="••••••••"
+                                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                 className="input-field" 
                                 required 
                                 onChange={handleChange}
@@ -101,3 +101,4 @@ const Login = () => {
 }
 
 export default Login;
+

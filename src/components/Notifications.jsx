@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Clock, AlertCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import './Notifications.css';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -157,3 +157,4 @@ const Notifications = () => {
 };
 
 export default Notifications;
+

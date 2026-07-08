@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Download, Eye, FileText, Send, Upload, DollarSign, Calendar, Users, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import './InvoiceModule.css';
@@ -30,7 +30,7 @@ const InvoiceModule = () => {
     const fetchInvoices = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/invoices', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/invoices', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setInvoices(res.data);
@@ -42,7 +42,7 @@ const InvoiceModule = () => {
     const fetchClients = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/clients', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/clients', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClients(res.data);
@@ -69,7 +69,7 @@ const InvoiceModule = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/invoices/create', formData, {
+            await axios.post('https://projectviewsystem.onrender.com/api/invoices/create', formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -99,7 +99,7 @@ const InvoiceModule = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/invoices/${invoiceId}`, {
+            await axios.delete(`https://projectviewsystem.onrender.com/api/invoices/${invoiceId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchInvoices();
@@ -279,3 +279,4 @@ const InvoiceModule = () => {
 };
 
 export default InvoiceModule;
+

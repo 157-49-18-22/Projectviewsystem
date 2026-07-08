@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { History, CheckCircle, Upload, FileText, PenTool, Star, FolderKanban, User, Clock } from 'lucide-react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 // Map entity_type to icon and color
 const getIconConfig = (entityType, remarks) => {
@@ -173,7 +173,7 @@ const ActivityTimeline = () => {
                                         {(log.old_status || log.new_status) && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {log.old_status && <span style={{ textDecoration: 'line-through', opacity: 0.8 }}>{log.old_status}</span>}
-                                                {log.old_status && log.new_status && <span>→</span>}
+                                                {log.old_status && log.new_status && <span>â†’</span>}
                                                 {log.new_status && <strong style={{ color: 'var(--text-main)' }}>{log.new_status}</strong>}
                                             </div>
                                         )}
@@ -244,4 +244,5 @@ const ActivityTimeline = () => {
 };
 
 export default ActivityTimeline;
+
 

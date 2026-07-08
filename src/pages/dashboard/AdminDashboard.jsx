@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Users, FileText, CreditCard, FolderKanban, DollarSign, Plus, Search, Filter, UserPlus, Calendar, History } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState({
@@ -237,7 +237,7 @@ const AdminDashboard = () => {
                             <div style={{ width: '4px', background: 'var(--primary-color)', borderRadius: '4px' }}></div>
                             <div>
                                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>System updated statuses</p>
-                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now • by System</p>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now â€¢ by System</p>
                             </div>
                         </div>
                     </div>
@@ -249,5 +249,6 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
 
 

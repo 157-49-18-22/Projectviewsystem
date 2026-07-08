@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, FileText, FileSpreadsheet, CreditCard, FolderKanban, CheckSquare, LogOut, Bell, Menu } from 'lucide-react';
 import Notifications from '../components/Notifications';
 import axios from 'axios';
 import './DashboardLayout.css';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://projectviewsystem.onrender.com/api';
 
 const DashboardLayout = () => {
     const navigate = useNavigate();
@@ -126,7 +126,7 @@ const DashboardLayout = () => {
                     {userRole === 'Client' && !hasPaymentApproved && (
                         <div className="payment-reminder">
                             <div className="reminder-content">
-                                <h3>⚠️ Payment Required</h3>
+                                <h3>âš ï¸ Payment Required</h3>
                                 <p>Please complete your payment to access Projects and Milestones features.</p>
                                 <button onClick={() => navigate('/payments')}>
                                     <CreditCard size={16} /> Go to Payments
@@ -142,3 +142,4 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
+

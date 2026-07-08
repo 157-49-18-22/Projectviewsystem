@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Upload, Download, Eye, CheckCircle, XCircle, Clock, DollarSign, FileText, Check, X } from 'lucide-react';
 import axios from 'axios';
 import './PaymentModule.css';
@@ -28,7 +28,7 @@ const PaymentModule = () => {
     const fetchPayments = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/payments', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/payments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPayments(res.data);
@@ -40,7 +40,7 @@ const PaymentModule = () => {
     const fetchInvoices = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/invoices', {
+            const res = await axios.get('https://projectviewsystem.onrender.com/api/invoices', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setInvoices(res.data.filter(inv => inv.status === 'Sent'));
@@ -63,7 +63,7 @@ const PaymentModule = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/payments/upload', formData, {
+            await axios.post('https://projectviewsystem.onrender.com/api/payments/upload', formData, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
@@ -93,7 +93,7 @@ const PaymentModule = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/payments/approve', 
+            await axios.post('https://projectviewsystem.onrender.com/api/payments/approve', 
                 { payment_id: paymentId, status: 'Approved' },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -111,7 +111,7 @@ const PaymentModule = () => {
 
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/payments/approve',
+            await axios.post('https://projectviewsystem.onrender.com/api/payments/approve',
                 { payment_id: paymentId, status: 'Rejected', rejection_reason: reason },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -318,3 +318,4 @@ const PaymentModule = () => {
 };
 
 export default PaymentModule;
+
