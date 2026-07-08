@@ -100,16 +100,16 @@ exports.createProject = async (req, res) => {
             [client_id, projectId, 'Project', projectId, req.user.id, 'Project Created']
         );
 
-        // Create notification
-        await notificationController.createNotification(
+        await connection.commit();
+        res.status(201).json({ message: 'Project created successfully.', projectId });
+
+        // Fire and forget - non-blocking notification
+        notificationController.createNotification(
             client_id,
             'Project Created',
             projectId,
             `New project "${project_name}" has been created`
-        );
-
-        await connection.commit();
-        res.status(201).json({ message: 'Project created successfully.', projectId });
+        ).catch(err => console.error('Error creating notification:', err));
     } catch (err) {
         await connection.rollback();
         console.error(err);
