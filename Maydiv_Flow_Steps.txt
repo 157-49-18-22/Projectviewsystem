@@ -1,0 +1,17 @@
+Maydiv — Client Lifecycle Flow
+
+1.  Admin logs into the dashboard.
+2.  Admin goes to Clients section and clicks "+ Create Client" — fills in company name, contact person, email, and phone.
+3.  System automatically sends a Welcome Email to the client with their login credentials.
+4.  Client opens the email and logs into the portal using the provided credentials.
+5.  On first login, the system asks the client to set a new password.
+6.  Client reads the Service Agreement PDF and clicks "Accept & Sign" to digitally sign it.
+7.  Admin creates an Invoice and it appears on the client's dashboard.
+8.  Client makes the payment externally and uploads the payment screenshot with a Transaction ID.
+9.  Admin reviews the payment proof and clicks "Approve".
+10. System automatically unlocks the full Project Dashboard for the client.
+11. Client can now view the project timeline, assigned team, and live Gantt chart.
+12. As each development phase is completed, the team raises a Milestone for client review.
+13. Client either clicks "Approve" to proceed or "Request Changes" with remarks.
+14. Once all milestones are approved, Admin clicks "Mark as Completed".
+15. Client submits a final Star Rating and written feedback. Project lifecycle is complete.

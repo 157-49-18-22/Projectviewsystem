@@ -1,0 +1,40 @@
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.success-icon-large {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.star-rating-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.star-btn {
+    background: transparent;
+    color: var(--border-color);
+    transition: transform 0.2s;
+}
+
+.star-btn:hover {
+    transform: scale(1.1);
+}
+
+.star-btn.on {
+    color: var(--warning);
+}
+
+.star-btn.off {
+    color: var(--border-color);
+}

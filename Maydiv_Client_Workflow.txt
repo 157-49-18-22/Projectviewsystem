@@ -1,0 +1,36 @@
+MAYDIV PROJECT MANAGEMENT DASHBOARD
+Phase 1: Automated Client Lifecycle Workflow
+
+EXECUTIVE SUMMARY
+This document outlines the end-to-end automated lifecycle of a client within the custom Maydiv web platform. The architecture is designed to eliminate manual data entry, streamline communications, and provide a premium, transparent experience for the client from onboarding to final delivery.
+
+---
+
+STEP 1: SECURE CLIENT ONBOARDING
+• Admin Action: The admin creates a new client account directly from the backend dashboard without requiring the client to fill out any lead forms.
+• Automation: The system generates secure, randomized login credentials and automatically dispatches a "Welcome to Maydiv" email containing the portal link and access details.
+
+STEP 2: DIGITAL AGREEMENT & E-SIGNATURE
+• Client Action: The client logs into the portal using the provided credentials. The dashboard is initially locked, showing only the pending Service Agreement.
+• Automation: The client reviews the PDF embedded within the platform, clicks "Accept & Sign," and signs digitally via a modal pad. The system instantly logs the IP, timestamp, and signature, sends a confirmation copy, and unlocks the next billing phase.
+
+STEP 3: INVOICING & PAYMENT CLEARANCE
+• Client Action: Upon agreement signing, a Proforma Invoice is automatically deployed to the client's dashboard. The client completes the transaction externally and uploads the Payment Screen/Transaction ID.
+• Admin Action: The admin receives an instant UI notification to review and "Approve" the payment proof.
+
+STEP 4: PROJECT AUTO-ACTIVATION
+• Automation: The moment the admin approves the payment, the system's state machine transitions the client to "Active". 
+• Client Action: The client's dashboard fully unlocks, revealing the Project Dashboard. They can now see the assigned Project Manager, timeline, overall progress, and a live Gantt Chart of the development phases.
+
+STEP 5: MILESTONE TRACKING & CLIENT APPROVALS
+• Team Action: As development progresses, the frontend/backend team completes tasks and triggers "Milestone Approvals".
+• Client Action: The client is notified via email and in-app alerts. They review the deliverables on the dashboard and click either "Approve" (advancing the timeline) or "Request Changes" (halting the current track).
+
+STEP 6: FINAL DELIVERY & FEEDBACK LOOP
+• Admin Action: Once all Gantt tasks and milestones are approved, the admin marks the project as "Completed."
+• Client Action: The client's dashboard freezes operations and presents the Final Review Module. The client submits a 5-star rating and leaves qualitative feedback regarding the collaboration experience.
+
+AUDIT & COMPLIANCE:
+Throughout this entire lifecycle, every single activity (from signing to payments to approvals) is recorded on a Vertical Audit Timeline visible to both Admin and Client, ensuring 100% transparency.
+
+Current Status: Both Backend API Architecture and Premium Frontend Visual Framework are fully implemented to support this flow.
