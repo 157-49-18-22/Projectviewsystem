@@ -1,23 +1,27 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.BREVO_SMTP_LOGIN,
+        pass: process.env.BREVO_SMTP_PASSWORD
+    }
+});
 
 const sendEmail = async (to, subject, text, html) => {
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'Maydiv Dashboard <onboarding@resend.dev>',
-            to: [to],
+        const mailOptions = {
+            from: '"Maydiv Dashboard" <576abhishek.2020@gmail.com>',
+            to,
             subject,
-            html: html || `<p>${text}</p>`
-        });
-
-        if (error) {
-            console.error('Resend error:', error);
-            return false;
-        }
-
-        console.log('Email sent via Resend:', data?.id);
+            text,
+            html
+        };
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent via Brevo:', info.messageId);
         return true;
     } catch (error) {
         console.error('Error sending email:', error);
