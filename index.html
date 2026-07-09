@@ -5,6 +5,84 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>my-project</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#fffbff",
+                    "on-secondary-fixed-variant": "#444173",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "background": "#f8f9ff",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-background": "#0b1c30",
+                    "on-tertiary-fixed-variant": "#6900b3",
+                    "surface-container-low": "#eff4ff",
+                    "tertiary-container": "#9c48ea",
+                    "secondary-fixed-dim": "#c4c1fb",
+                    "tertiary-fixed": "#f0dbff",
+                    "surface-tint": "#494bd6",
+                    "outline-variant": "#c7c4d7",
+                    "primary": "#4648d4",
+                    "surface-bright": "#f8f9ff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#e3dfff",
+                    "on-secondary-fixed": "#181445",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#8127cf",
+                    "surface-container-high": "#dce9ff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-container": "#c7c3fe",
+                    "inverse-primary": "#c0c1ff",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#514f81",
+                    "tertiary-fixed-dim": "#ddb7ff",
+                    "on-primary-fixed": "#07006c",
+                    "secondary": "#5b598c",
+                    "surface-dim": "#cbdbf5",
+                    "surface": "#f8f9ff",
+                    "outline": "#767586",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#e1e0ff",
+                    "on-error": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#6063ee",
+                    "on-surface": "#0b1c30",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "inverse-surface": "#213145",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "on-tertiary-fixed": "#2c0051",
+                    "surface-container": "#e5eeff",
+                    "on-surface-variant": "#464554",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-variant": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "1rem",
+                    "stack-lg": "2rem",
+                    "container-max": "1440px",
+                    "margin-mobile": "1rem",
+                    "gutter": "1.5rem",
+                    "margin-desktop": "2rem",
+                    "stack-sm": "0.5rem"
+            }
+          }
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

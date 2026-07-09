@@ -119,6 +119,30 @@ exports.createProject = async (req, res) => {
     }
 };
 
+// Admin Action: Update Project Details
+exports.updateProject = async (req, res) => {
+    const projectId = req.params.id;
+    const { project_name, start_date, end_date, status } = req.body;
+
+    try {
+        await pool.query(
+            'UPDATE projects SET project_name = ?, start_date = ?, end_date = ?, status = COALESCE(?, status) WHERE id = ?',
+            [project_name, start_date, end_date, status, projectId]
+        );
+
+        // Log it
+        await pool.query(
+            'INSERT INTO status_log (client_id, project_id, entity_type, entity_id, changed_by, remarks) VALUES ((SELECT client_id FROM projects WHERE id = ?), ?, ?, ?, ?, ?)',
+            [projectId, projectId, 'Project', projectId, req.user.id, 'Project Details Updated']
+        );
+
+        res.json({ message: 'Project updated successfully.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
 // Admin Action: Assign Team Member to Project
 exports.assignTeam = async (req, res) => {
     const { project_id, user_id, role } = req.body;
@@ -190,17 +214,16 @@ exports.getProjectDetails = async (req, res) => {
 };
 
 // Get Project Milestones (for milestone approval dropdown)
-// Only returns milestones that have NOT been submitted for approval yet
+// Returns all milestones for the project
 exports.getProjectMilestones = async (req, res) => {
     const projectId = req.params.id;
 
     try {
-        // Only return milestones with 'Not Submitted' status (available to submit)
+        // Return all milestones for the project
         const [milestones] = await pool.query(
-            `SELECT id, milestone_name 
+            `SELECT id, milestone_name, status
              FROM milestone_approvals 
              WHERE project_id = ? 
-               AND status = 'Not Submitted'
              ORDER BY milestone_name ASC`,
             [projectId]
         );
@@ -423,3 +446,24 @@ exports.updateMilestone = async (req, res) => {
     }
 };
 
+// Admin Action: Delete a Milestone
+exports.deleteMilestone = async (req, res) => {
+    const milestoneId = req.params.id;
+    try {
+        const [rows] = await pool.query('SELECT * FROM project_milestones WHERE id = ?', [milestoneId]);
+        if (rows.length === 0) {
+            // Try milestone_approvals table as fallback
+            const [approvalRows] = await pool.query('SELECT * FROM milestone_approvals WHERE id = ?', [milestoneId]);
+            if (approvalRows.length === 0) {
+                return res.status(404).json({ message: 'Milestone not found' });
+            }
+            await pool.query('DELETE FROM milestone_approvals WHERE id = ?', [milestoneId]);
+        } else {
+            await pool.query('DELETE FROM project_milestones WHERE id = ?', [milestoneId]);
+        }
+        res.json({ message: 'Milestone deleted successfully.' });
+    } catch (err) {
+        console.error('Delete milestone error:', err);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};

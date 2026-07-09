@@ -1,0 +1,85 @@
+/* ============================================
+   MilestoneModule - Mobile-First Responsive CSS
+   ============================================ */
+
+/* Stats grid on mobile - 1 column */
+@media (max-width: 768px) {
+    
+    /* Header row */
+    .milestone-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .milestone-header-row button {
+        width: 100% !important;
+    }
+
+    /* Stats cards - stack on mobile */
+    .milestone-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Filters row - wrap filter buttons + search  */
+    .milestone-filters-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .milestone-filters-row > div:first-child {
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+    }
+
+    .milestone-filters-row > div:last-child {
+        width: 100% !important;
+    }
+
+    /* ---- Milestone Card - mobile layout ---- */
+    .milestone-card-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 1rem !important;
+        gap: 0.75rem !important;
+    }
+
+    /* Right action bar takes full width on mobile */
+    .milestone-card-row .milestone-right-actions {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        min-width: unset !important;
+    }
+
+    /* Respond button full width on mobile */
+    .milestone-respond-btn {
+        flex: 1 !important;
+    }
+
+    /* Respond modal grid goes to column */
+    .respond-choice-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Modal card responsive */
+    .modal-overlay {
+        padding: 10px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-card {
+        margin: 16px auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        border-radius: 16px !important;
+        padding: 1.25rem !important;
+    }
+
+    /* search input */
+    .milestone-search-input {
+        width: 100% !important;
+    }
+}

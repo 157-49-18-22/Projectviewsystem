@@ -1,119 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+const fs = require('fs');
+const path = require('path');
 
-:root {
-  --primary-color: #4F46E5;
-  --primary-hover: #4338CA;
-  --bg-main: #f8fafc;
-  --bg-card: #ffffff;
-  --sidebar-bg: #1e293b;
-  --sidebar-hover: #334155;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-light: #f8fafc;
-  --border-color: #e2e8f0;
-
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Outfit', sans-serif;
-  background-color: var(--bg-main);
-  color: var(--text-main);
-  -webkit-font-smoothing: antialiased;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  font-family: 'Outfit', sans-serif;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md);
-  font-weight: 500;
-  text-align: center;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-hover);
-  box-shadow: var(--shadow-md);
-}
-
-.card {
-  background-color: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-
-.input-field {
-  width: 100%;
-
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  font-family: inherit;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.input-field:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
+const responsiveCSS = `
 /* ==========================================================
    GLOBAL MOBILE RESPONSIVENESS INJECTED OVERRIDES
    ========================================================== */
@@ -204,3 +92,31 @@ button {
         padding: 0 !important;
     }
 }
+`;
+
+const filesToUpdate = [
+    'src/pages/projects/ProjectDashboard.css',
+    'src/pages/admin/ClientManagement.css', 
+    'src/pages/agreements/AgreementViewer.css',
+    'src/pages/invoices/InvoiceModule.css',
+    'src/pages/payments/PaymentModule.css',
+    'src/pages/reviews/ReviewModule.css',
+    'src/styles/index.css'
+];
+
+filesToUpdate.forEach(file => {
+    const filePath = path.join(__dirname, file);
+    if (fs.existsSync(filePath)) {
+        // Read file contents
+        let content = fs.readFileSync(filePath, 'utf8');
+        // Prevent duplicate injections
+        if (!content.includes('GLOBAL MOBILE RESPONSIVENESS INJECTED OVERRIDES')) {
+            fs.appendFileSync(filePath, '\n' + responsiveCSS);
+            console.log(`Updated ${file}`);
+        } else {
+            console.log(`Already updated ${file}`);
+        }
+    } else {
+        console.log(`File not found: ${file}`);
+    }
+});

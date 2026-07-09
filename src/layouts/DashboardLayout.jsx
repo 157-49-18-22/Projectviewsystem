@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, FileText, FileSpreadsheet, CreditCard, FolderKanban, CheckSquare, LogOut, Bell, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, FileSpreadsheet, CreditCard, FolderKanban, CheckSquare, LogOut, Bell, Menu, X } from 'lucide-react';
 import Notifications from '../components/Notifications';
 import axios from 'axios';
 import './DashboardLayout.css';
@@ -18,16 +18,28 @@ const DashboardLayout = () => {
     useEffect(() => {
         setUserRole(user.role);
         
+        // Auto close sidebar on mobile
+        const handleResize = () => {
+            if (window.innerWidth <= 768) {
+                setSidebarOpen(false);
+            } else {
+                setSidebarOpen(true);
+            }
+        };
+        handleResize(); // Set initially
+        window.addEventListener('resize', handleResize);
+        
         if (user.role === 'Client') {
             fetchClientStatus();
-            
-            // Poll for status changes every 10 seconds
             const interval = setInterval(() => {
                 fetchClientStatus();
             }, 10000);
-
-            return () => clearInterval(interval);
+            return () => {
+                clearInterval(interval);
+                window.removeEventListener('resize', handleResize);
+            };
         }
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const fetchClientStatus = async () => {
@@ -35,7 +47,6 @@ const DashboardLayout = () => {
             const res = await axios.get(`${API}/clients`, { headers: { Authorization: `Bearer ${token}` } });
             if (res.data.length > 0) {
                 const status = res.data[0].status;
-                console.log('Client status fetched:', status);
                 setClientStatus(status);
             }
         } catch (err) {
@@ -53,45 +64,61 @@ const DashboardLayout = () => {
 
     return (
         <div className="layout-container">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && window.innerWidth <= 768 && (
+                <div 
+                    className="sidebar-overlay fixed inset-0 bg-black/50 z-[998] backdrop-blur-sm"
+                    onClick={() => setSidebarOpen(false)}
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 998, backdropFilter: 'blur(2px)' }}
+                ></div>
+            )}
+
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
-                <div className="sidebar-header">
+                <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <h2>MAYDIV</h2>
+                    <button 
+                        onClick={() => setSidebarOpen(false)} 
+                        className="sidebar-close-btn"
+                        aria-label="Close menu"
+                    >
+                        <X size={22} />
+                    </button>
                 </div>
                 <nav className="sidebar-nav">
-                    <NavLink to="/dashboard" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink to="/dashboard" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                         <LayoutDashboard size={20} /> <span>Dashboard</span>
                     </NavLink>
                     {userRole === 'Admin' && (
-                        <NavLink to="/clients" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                        <NavLink to="/clients" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                             <Users size={20} /> <span>Clients</span>
                         </NavLink>
                     )}
-                    <NavLink to="/agreements" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink to="/agreements" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                         <FileText size={20} /> <span>Agreements</span>
                     </NavLink>
-                    <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink to="/invoices" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                         <FileSpreadsheet size={20} /> <span>Invoices</span>
                     </NavLink>
-                    <NavLink to="/payments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink to="/payments" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                         <CreditCard size={20} /> <span>Payments</span>
                     </NavLink>
                     {userRole === 'Admin' || (userRole === 'Client' && hasPaymentApproved) ? (
                         <>
-                            <NavLink to="/projects" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <NavLink to="/projects" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                                 <FolderKanban size={20} /> <span>Projects</span>
                             </NavLink>
-                            <NavLink to="/milestones" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <NavLink to="/milestones" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                                 <CheckSquare size={20} /> <span>Milestones</span>
                             </NavLink>
                         </>
                     ) : null}
                     {userRole === 'Admin' && (
-                        <NavLink to="/timeline" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                        <NavLink to="/timeline" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                             <CheckSquare size={20} /> <span>Audit Timeline</span>
                         </NavLink>
                     )}
-                    <NavLink to="/notifications" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink to="/notifications" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                         <Bell size={20} /> <span>Notifications</span>
                     </NavLink>
                 </nav>

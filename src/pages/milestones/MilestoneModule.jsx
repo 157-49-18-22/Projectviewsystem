@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, CheckCircle2, Clock, AlertCircle, Search, Folder, User as UserIcon, Calendar, MoreVertical, DollarSign, Pickaxe } from 'lucide-react';
+import { Plus, X, CheckCircle2, Clock, AlertCircle, Search, Folder, User as UserIcon, Calendar, MoreVertical, DollarSign, Pickaxe, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import './MilestoneModule.css';
 
 const API = 'https://projectviewsystem.onrender.com/api';
 
@@ -149,7 +150,7 @@ const MilestoneModule = () => {
     return (
         <div className="module-content" style={{ maxWidth: '1440px', margin: '0 auto' }}>
             {/* Header Section */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem' }}>
+            <div className="milestone-header-row" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '2rem' }}>
                 <div>
                     <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>Milestone Approvals</h2>
                     <p style={{ color: 'var(--text-muted)', margin: 0 }}>Review and manage client project milestones and payments.</p>
@@ -163,7 +164,7 @@ const MilestoneModule = () => {
             </div>
 
             {/* Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div className="milestone-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
                 <div style={{ background: 'var(--bg-card)', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
                         <CheckCircle2 size={24} />
@@ -194,7 +195,7 @@ const MilestoneModule = () => {
             </div>
 
             {/* Filters Row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'space-between' }}>
+            <div className="milestone-filters-row" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     {['All', 'Pending', 'Approved'].map(t => (
                         <button key={t} onClick={() => setFilter(t)} style={{
@@ -207,7 +208,7 @@ const MilestoneModule = () => {
                         </button>
                     ))}
                 </div>
-                <div style={{ position: 'relative', width: '280px' }}>
+                <div className="milestone-search-input" style={{ position: 'relative', width: '280px' }}>
                     <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                     <input 
                         type="text" 
@@ -233,7 +234,7 @@ const MilestoneModule = () => {
                     {displayedMilestones.map(m => {
                         const cfg = statusConfig[m.status] || statusConfig['Pending Approval'];
                         return (
-                            <div key={m.id} style={{
+                            <div key={m.id} className="milestone-card-row" style={{
                                 position: 'relative',
                                 background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px',
                                 padding: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center',
@@ -291,47 +292,37 @@ const MilestoneModule = () => {
                                 </div>
 
                                 {/* Right Actions/Status */}
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', minWidth: '160px' }}>
+                                <div className="milestone-right-actions" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', minWidth: '160px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: cfg.bg, color: cfg.color, padding: '0.4rem 1rem', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem' }}>
                                         {m.status === 'Approved' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: cfg.color, animation: 'pulse 2s infinite' }} />}
                                         {m.status}
                                     </div>
                                     
-                                    {m.status === 'Pending Approval' ? (
-                                        <div style={{ display: 'flex', gap: '0.5rem', position: 'relative' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                        {m.status === 'Pending Approval' && (
                                             <button className="btn-secondary" style={{ padding: '0.5rem 1.25rem', fontWeight: 600, borderRadius: '8px' }}
                                                 onClick={() => { setShowRespond(m); setRespondData({ status: '', client_remarks: '' }); }}>
                                                 {isAdmin ? 'Respond' : 'Review & Respond'}
                                             </button>
+                                        )}
+                                        <button 
+                                            onClick={() => setShowView(m)}
+                                            style={{ padding: '0.5rem 1rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: 600, fontSize: '0.85rem' }}>
+                                            View Details
+                                        </button>
+                                        {isAdmin && m.status === 'Pending Approval' && (
                                             <button 
-                                                onClick={() => setActiveDropdown(activeDropdown === m.id ? null : m.id)}
-                                                style={{ padding: '0.5rem', background: activeDropdown === m.id ? 'var(--bg-card)' : 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s' }}>
-                                                <MoreVertical size={20} />
+                                                onClick={() => handleDelete(m.id)}
+                                                style={{ padding: '0.5rem', background: 'transparent', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--danger)', cursor: 'pointer', transition: 'all 0.2s' }}>
+                                                <Trash2 size={20} />
                                             </button>
-                                            
-                                            {/* Dropdown Menu */}
-                                            {activeDropdown === m.id && (
-                                                <div style={{ 
-                                                    position: 'absolute', top: '110%', right: 0, zIndex: 10,
-                                                    background: 'var(--bg-card)', border: '1px solid var(--border-color)', 
-                                                    borderRadius: '8px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)', 
-                                                    minWidth: '150px', overflow: 'hidden'
-                                                }}>
-                                                    <button onClick={() => { setShowView(m); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-color)', color: 'var(--text-main)', cursor: 'pointer', fontSize: '0.85rem' }}>View Details</button>
-                                                    <button onClick={() => { handleDelete(m.id); setActiveDropdown(null); }} style={{ width: '100%', padding: '0.75rem 1rem', textAlign: 'left', background: 'transparent', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.85rem' }}>Delete</button>
-                                                </div>
-                                            )}
-                                            
-                                            {/* Close dropdown when clicking outside overlay (hacky but works inline) */}
-                                            {activeDropdown === m.id && (
-                                                <div onClick={() => setActiveDropdown(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9 }} />
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                                            ${(Math.random() * 5000 + 1000).toFixed(2)} {/* Mock price for visuals like the HTML */}
-                                        </p>
-                                    )}
+                                        )}
+                                        {m.status !== 'Pending Approval' && (
+                                            <p style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                                                ${(Math.random() * 5000 + 1000).toFixed(2)}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -376,12 +367,12 @@ const MilestoneModule = () => {
                                     disabled={!formData.project_id}>
                                     <option value="">-- Choose a milestone --</option>
                                     {projectMilestones.map(m => (
-                                        <option key={m.id} value={m.id}>{m.milestone_name}</option>
+                                        <option key={m.id} value={m.id}>{m.milestone_name} ({m.status})</option>
                                     ))}
                                 </select>
                                 {formData.project_id && projectMilestones.length === 0 && (
                                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                        No available milestones for this project (all submitted).
+                                        No milestones found for this project.
                                     </p>
                                 )}
                             </div>
@@ -411,7 +402,7 @@ const MilestoneModule = () => {
                             Milestone: <strong style={{ color: 'var(--text-main)' }}>{showRespond.milestone_name}</strong>
                         </p>
                         <form onSubmit={handleRespond} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="respond-choice-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <button type="button"
                                     onClick={() => setRespondData({ ...respondData, status: 'Approved' })}
                                     style={{ 

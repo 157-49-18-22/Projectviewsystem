@@ -45,6 +45,30 @@
     -webkit-text-fill-color: transparent;
 }
 
+.sidebar-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: none; /* Hidden on desktop */
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.sidebar-close-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .sidebar-close-btn {
+        display: flex; /* Show only on mobile */
+    }
+}
+
 .sidebar-nav {
     flex: 1;
     overflow-y: auto;
@@ -252,4 +276,51 @@
 
 .reminder-content button:hover {
     background: #e0a800;
+}
+
+/* -----------------------------
+   Mobile Responsiveness 
+----------------------------- */
+@media (max-width: 768px) {
+    /* Make sidebar behave as a fixed drawer on mobile */
+    .sidebar {
+        position: fixed;
+        left: -300px !important; /* Completely hide by default */
+        top: 0;
+        bottom: 0;
+        width: 260px !important;
+        z-index: 999;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar.open, .sidebar:not(.closed) {
+        left: 0 !important; /* Show when open */
+    }
+
+    .sidebar.closed {
+        left: -300px !important; /* Force hide when closed */
+        box-shadow: none;
+    }
+
+    /* Topbar compact padding */
+    .topbar {
+        padding: 0 1rem;
+        height: 60px;
+    }
+
+    /* Content Area padding adjustment */
+    .content-area {
+        padding: 1rem;
+    }
+
+    /* Shrink the right side of topbar */
+    .topbar-right {
+        gap: 1rem;
+    }
+
+    /* Hide the user name on mobile top bar */
+    .user-info {
+        display: none; 
+    }
 }
