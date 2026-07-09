@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Download, PenTool, CheckCircle, Clock, Upload, Send, Users, RotateCcw, ChevronLeft, ChevronRight, Filter, Plus, Verified, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
@@ -232,7 +232,7 @@ const AgreementViewer = () => {
                                                                 </button>
                                                             )}
                                                             <a 
-                                                                href={`http://localhost:5000${agreement.document_url}`} 
+                                                                href={`https://projectviewsystem.onrender.com${agreement.document_url}`} 
                                                                 target="_blank" 
                                                                 rel="noopener noreferrer"
                                                                 className="icon-btn"
@@ -302,10 +302,11 @@ const AgreementViewer = () => {
                                     <p>Status: <span className={`status-${currentAgreement.status.toLowerCase()}`}>{currentAgreement.status}</span></p>
                                     
                                     <a 
-                                        href={`http://localhost:5000${currentAgreement.document_url}`} 
+                                        href={`https://projectviewsystem.onrender.com${currentAgreement.document_url}`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="btn-secondary outline-btn"
+                                        className="sign-button"
+                                        style={{ width: 'auto', display: 'inline-flex', marginTop: '1rem' }}
                                     >
                                         <Download size={18} /> View/Download Agreement
                                     </a>

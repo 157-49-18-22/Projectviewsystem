@@ -127,7 +127,7 @@ const DashboardLayout = () => {
                     {userRole === 'Client' && !hasPaymentApproved && (
                         <div className="payment-reminder">
                             <div className="reminder-content">
-                                <h3>âš ï¸ Payment Required</h3>
+                                <h3>Payment Required</h3>
                                 <p>Please complete your payment to access Projects and Milestones features.</p>
                                 <button onClick={() => navigate('/payments')}>
                                     <CreditCard size={16} /> Go to Payments

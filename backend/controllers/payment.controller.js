@@ -68,33 +68,6 @@ exports.handlePaymentApproval = async (req, res) => {
                  projectId = existingProject[0].id;
                  await connection.query('UPDATE projects SET status = ? WHERE id = ?', ['Active', existingProject[0].id]);
             }
-
-            // Email Client - Project Unlocked
-            await sendEmail(clientEmail, 'Payment Approved & Project Activated', 'Payment Approved',
-                `<p>Your payment has been successfully approved.</p><p>The Project Visibility phase has been unlocked in your dashboard! You can now track timelines and meet your team.</p>`);
-            
-            // Create notification
-            await notificationController.createNotification(
-                payment.client_id,
-                'Payment Approved - Project Active',
-                projectId,
-                'Your payment has been approved and project is now active'
-            );
-        } 
-        else if (status === 'Rejected') {
-            // Email Client - Rejected Reason
-            await sendEmail(clientEmail, 'Payment Proof Rejected', 'Payment Rejected',
-                `<p>Your recent payment proof was rejected for the following reason:</p>
-                 <blockquote>${rejection_reason || 'Image unclear or transaction not found.'}</blockquote>
-                 <p>Please log in and upload a valid proof for the invoice.</p>`);
-            
-            // Create notification
-            await notificationController.createNotification(
-                payment.client_id,
-                'Payment Rejected',
-                null,
-                `Payment proof rejected: ${rejection_reason || 'Image unclear or transaction not found'}`
-            );
         }
 
         // 3. Log Action
@@ -105,6 +78,31 @@ exports.handlePaymentApproval = async (req, res) => {
 
         await connection.commit();
         res.json({ message: `Payment successfully ${status}.` });
+
+        // Background Tasks: Emails and Notifications
+        if (status === 'Approved') {
+            sendEmail(clientEmail, 'Payment Approved & Project Activated', 'Payment Approved',
+                `<p>Your payment has been successfully approved.</p><p>The Project Visibility phase has been unlocked in your dashboard! You can now track timelines and meet your team.</p>`).catch(console.error);
+            
+            notificationController.createNotification(
+                payment.client_id,
+                'Payment Approved - Project Active',
+                typeof projectId !== 'undefined' ? projectId : null,
+                'Your payment has been approved and project is now active'
+            ).catch(console.error);
+        } else if (status === 'Rejected') {
+            sendEmail(clientEmail, 'Payment Proof Rejected', 'Payment Rejected',
+                `<p>Your recent payment proof was rejected for the following reason:</p>
+                 <blockquote>${rejection_reason || 'Image unclear or transaction not found.'}</blockquote>
+                 <p>Please log in and upload a valid proof for the invoice.</p>`).catch(console.error);
+            
+            notificationController.createNotification(
+                payment.client_id,
+                'Payment Rejected',
+                null,
+                `Payment proof rejected: ${rejection_reason || 'Image unclear or transaction not found'}`
+            ).catch(console.error);
+        }
 
     } catch (err) {
         await connection.rollback();

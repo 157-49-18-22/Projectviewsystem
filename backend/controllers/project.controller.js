@@ -43,79 +43,79 @@ exports.getAllProjects = async (req, res) => {
 // Admin Action: Create a New Project
 exports.createProject = async (req, res) => {
     const { client_id, project_name, start_date, end_date, milestones, team_members } = req.body;
-    const connection = await pool.getConnection();
-
+    
     try {
-        await connection.beginTransaction();
-
-        // Create Project
-        const [result] = await connection.query(
+        // 1. Create Project (Quick Blocking)
+        const [result] = await pool.query(
             'INSERT INTO projects (client_id, project_name, status, start_date, end_date) VALUES (?, ?, ?, ?, ?)',
             [client_id, project_name, 'Not Started', start_date, end_date]
         );
         const projectId = result.insertId;
 
-        // Create Milestones if provided
-        if (milestones && milestones.length > 0) {
-            for (const milestone of milestones) {
-                await connection.query(
-                    'INSERT INTO milestone_approvals (project_id, milestone_name, description, status) VALUES (?, ?, ?, ?)',
-                    [projectId, milestone.name, milestone.description, 'Not Submitted']
-                );
-            }
-        }
-
-        // Create Team Members if provided (create users first)
-        if (team_members && team_members.length > 0) {
-            for (const member of team_members) {
-                // Check if user already exists by email (we'll use name as email for now)
-                const [existingUsers] = await connection.query(
-                    'SELECT id FROM users WHERE name = ? OR email = ?',
-                    [member.name, `${member.name.toLowerCase().replace(/\s/g, '.')}@maydiv.com`]
-                );
-                
-                let userId;
-                if (existingUsers.length > 0) {
-                    userId = existingUsers[0].id;
-                } else {
-                    // Create new user
-                    const [userResult] = await connection.query(
-                        'INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)',
-                        [member.name, `${member.name.toLowerCase().replace(/\s/g, '.')}@maydiv.com`, 'Team Member', '$2y$10$placeholder']
-                    );
-                    userId = userResult.insertId;
-                }
-
-                // Assign to project
-                await connection.query(
-                    'INSERT INTO project_team (project_id, user_id, role) VALUES (?, ?, ?)',
-                    [projectId, userId, member.designation]
-                );
-            }
-        }
-
-        // Log it
-        await connection.query(
-            'INSERT INTO status_log (client_id, project_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?, ?)',
-            [client_id, projectId, 'Project', projectId, req.user.id, 'Project Created']
-        );
-
-        await connection.commit();
+        // 2. Return Response Instantly
         res.status(201).json({ message: 'Project created successfully.', projectId });
 
-        // Fire and forget - non-blocking notification
-        notificationController.createNotification(
-            client_id,
-            'Project Created',
-            projectId,
-            `New project "${project_name}" has been created`
-        ).catch(err => console.error('Error creating notification:', err));
+        // 3. Background Processing for the rest (Non-Blocking)
+        (async () => {
+            try {
+                // Create Milestones
+                if (milestones && milestones.length > 0) {
+                    for (const milestone of milestones) {
+                        await pool.query(
+                            'INSERT INTO milestone_approvals (project_id, milestone_name, description, status) VALUES (?, ?, ?, ?)',
+                            [projectId, milestone.name, milestone.description, 'Not Submitted']
+                        );
+                    }
+                }
+
+                // Create Team Members
+                if (team_members && team_members.length > 0) {
+                    for (const member of team_members) {
+                        const [existingUsers] = await pool.query(
+                            'SELECT id FROM users WHERE name = ? OR email = ?',
+                            [member.name, `${member.name.toLowerCase().replace(/\\s/g, '.')}@maydiv.com`]
+                        );
+                        
+                        let userId;
+                        if (existingUsers.length > 0) {
+                            userId = existingUsers[0].id;
+                        } else {
+                            const [userResult] = await pool.query(
+                                'INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, ?, ?)',
+                                [member.name, `${member.name.toLowerCase().replace(/\\s/g, '.')}@maydiv.com`, 'Team Member', '$2y$10$placeholder']
+                            );
+                            userId = userResult.insertId;
+                        }
+
+                        await pool.query(
+                            'INSERT INTO project_team (project_id, user_id, role) VALUES (?, ?, ?)',
+                            [projectId, userId, member.designation]
+                        );
+                    }
+                }
+
+                // Log it
+                await pool.query(
+                    'INSERT INTO status_log (client_id, project_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?, ?)',
+                    [client_id, projectId, 'Project', projectId, req.user.id, 'Project Created']
+                );
+
+                // Notification
+                notificationController.createNotification(
+                    client_id,
+                    'Project Created',
+                    projectId,
+                    `New project "${project_name}" has been created`
+                ).catch(err => console.error('Error creating notification:', err));
+
+            } catch (bgError) {
+                console.error('Background task error in createProject:', bgError);
+            }
+        })();
+
     } catch (err) {
-        await connection.rollback();
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
-    } finally {
-        connection.release();
     }
 };
 
