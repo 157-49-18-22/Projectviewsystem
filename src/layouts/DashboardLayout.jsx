@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, FileText, FileSpreadsheet, CreditCard, FolderKanban, CheckSquare, LogOut, Bell, Menu } from 'lucide-react';
 import Notifications from '../components/Notifications';
@@ -46,7 +46,8 @@ const DashboardLayout = () => {
     const hasPaymentApproved = clientStatus === 'Project Active' || clientStatus === 'Active';
 
     const handleLogout = () => {
-        // Clear local storage token
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/login');
     };
 
