@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X, CheckCircle2, Clock, AlertCircle, Search, Folder, User as UserIcon, Calendar, MoreVertical, DollarSign, Pickaxe } from 'lucide-react';
 import axios from 'axios';
 
@@ -26,6 +26,7 @@ const MilestoneModule = () => {
 
     const [formData, setFormData] = useState({ project_id: '', milestone_id: '', description: '' });
     const [respondData, setRespondData] = useState({ status: '', client_remarks: '' });
+    const [submitting, setSubmitting] = useState(false);
     
     // UI Filters
     const [filter, setFilter] = useState('All');
@@ -73,6 +74,7 @@ const MilestoneModule = () => {
 
     const handleCreate = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
             await axios.post(`${API}/milestones/request`, formData, { headers: { Authorization: `Bearer ${token}` } });
             alert('Ã¢Å“â€¦ Milestone submitted for client approval! Client has been notified.');
@@ -82,6 +84,8 @@ const MilestoneModule = () => {
             fetchMilestones();
         } catch (err) {
             alert('Ã¢ÂÅ’ ' + (err.response?.data?.message || 'Server error'));
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -387,7 +391,9 @@ const MilestoneModule = () => {
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}></textarea>
                             </div>
-                            <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem', padding: '0.75rem', fontWeight: 600 }}>Submit for Client Approval</button>
+                            <button type="submit" className="btn-primary" disabled={submitting} style={{ marginTop: '0.5rem', padding: '0.75rem', fontWeight: 600, opacity: submitting ? 0.7 : 1, cursor: submitting ? 'not-allowed' : 'pointer' }}>
+                                {submitting ? '⏳ Submitting...' : 'Submit for Client Approval'}
+                            </button>
                         </form>
                     </div>
                 </div>

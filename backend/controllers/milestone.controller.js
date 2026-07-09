@@ -65,22 +65,24 @@ exports.requestApproval = async (req, res) => {
 
         await pool.query(updateQuery, updateParams);
 
-        // Notify client via email
-        const [projectData] = await pool.query(
+        // Respond immediately — email runs in the background (non-blocking)
+        res.status(200).json({ message: 'Milestone submitted for approval. Client notified.', id: milestone_id });
+
+        // Fire-and-forget: send email without blocking the response
+        pool.query(
             'SELECT c.email, c.contact_person FROM projects p JOIN clients c ON p.client_id = c.id WHERE p.id = ?',
             [project_id]
-        );
-
-        if (projectData.length > 0) {
-            const emailHtml = `
-                <p>Hello ${projectData[0].contact_person},</p>
-                <p>Milestone <strong>${milestone_name}</strong> has been submitted for your review.</p>
-                <p>Please log in to your dashboard to <strong>Approve</strong> or <strong>Request Changes</strong>.</p>
-            `;
-            await sendEmail(projectData[0].email, `Milestone Review Required: ${milestone_name}`, 'Milestone Review', emailHtml);
-        }
-
-        res.status(200).json({ message: 'Milestone submitted for approval. Client notified.', id: milestone_id });
+        ).then(([projectData]) => {
+            if (projectData.length > 0) {
+                const emailHtml = `
+                    <p>Hello ${projectData[0].contact_person},</p>
+                    <p>Milestone <strong>${milestone_name}</strong> has been submitted for your review.</p>
+                    <p>Please log in to your dashboard to <strong>Approve</strong> or <strong>Request Changes</strong>.</p>
+                `;
+                sendEmail(projectData[0].email, `Milestone Review Required: ${milestone_name}`, 'Milestone Review', emailHtml)
+                    .catch(emailErr => console.error('Background email error (milestone):', emailErr));
+            }
+        }).catch(dbErr => console.error('Background DB error (milestone email fetch):', dbErr));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
