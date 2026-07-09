@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2, Eye, X } from 'lucide-react';
 import axios from 'axios';
 import './ClientManagement.css';
@@ -45,7 +45,7 @@ const ClientManagement = () => {
             await axios.post(`${API}/clients`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('âœ… Client Created! Welcome email sent to ' + formData.email);
+            alert('✅ Client Created! Welcome email sent to ' + formData.email);
             setFormData({ company_name: '', contact_person: '', phone: '', email: '' });
             setShowModal(false);
             fetchClients(); // Refresh table with real data
@@ -80,7 +80,7 @@ const ClientManagement = () => {
             await axios.put(`${API}/clients/${selectedClient.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('âœ… Client Updated Successfully!');
+            alert('✅ Client Updated Successfully!');
             setFormData({ company_name: '', contact_person: '', phone: '', email: '' });
             setShowEditModal(false);
             setSelectedClient(null);
@@ -99,7 +99,7 @@ const ClientManagement = () => {
             await axios.delete(`${API}/clients/${selectedClient.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert('âœ… Client Deleted Successfully!');
+            alert('✅ Client Deleted Successfully!');
             setShowDeleteModal(false);
             setSelectedClient(null);
             fetchClients();
