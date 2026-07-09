@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import axios from 'axios';
@@ -9,6 +9,15 @@ const Login = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Agar pehle se logged in hai to seedha dashboard pe bhejo
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (token && user) {
+            navigate(user.role === 'Client' ? '/client/dashboard' : '/dashboard', { replace: true });
+        }
+    }, []);
 
     const handleChange = (e) => {
         setCredentials({...credentials, [e.target.name]: e.target.value});

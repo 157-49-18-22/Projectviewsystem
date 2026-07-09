@@ -13,17 +13,28 @@ import MilestoneModule from './pages/milestones/MilestoneModule';
 import ReviewModule from './pages/reviews/ReviewModule';
 import ActivityTimeline from './pages/dashboard/ActivityTimeline';
 import NotificationCenter from './pages/notifications/NotificationCenter';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/set-password" element={<SetPassword />} />
-        
-        {/* Protected Dashboard Routes */}
-        <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+
+        {/* Root → redirect to login if not logged in, else dashboard */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Protected Dashboard Routes — token nahi to /login pe redirect */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="clients" element={<ClientManagement />} />
           <Route path="agreements" element={<AgreementViewer />} />
@@ -34,13 +45,15 @@ function App() {
           <Route path="reviews" element={<ReviewModule />} />
           <Route path="timeline" element={<ActivityTimeline />} />
           <Route path="notifications" element={<NotificationCenter />} />
-          {/* We will add more routes here based on Roles later */}
           <Route path="client/dashboard" element={<ClientDashboard />} />
         </Route>
 
+        {/* Any unknown route → login page */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
