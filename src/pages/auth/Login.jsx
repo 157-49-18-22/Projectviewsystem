@@ -71,7 +71,7 @@ const Login = () => {
                             <input 
                                 type="password" 
                                 name="password" 
-                                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                                placeholder="••••••••"
                                 className="input-field" 
                                 required 
                                 onChange={handleChange}

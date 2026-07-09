@@ -237,7 +237,7 @@ const AdminDashboard = () => {
                             <div style={{ width: '4px', background: 'var(--primary-color)', borderRadius: '4px' }}></div>
                             <div>
                                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>System updated statuses</p>
-                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now â€¢ by System</p>
+                                <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Just now • by System</p>
                             </div>
                         </div>
                     </div>
