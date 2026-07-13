@@ -13,4 +13,7 @@ router.get('/all', verifyToken, checkRole(['Admin']), agreementController.getAll
 router.get('/my-agreements', verifyToken, checkRole(['Client']), agreementController.getClientAgreements);
 router.post('/sign', verifyToken, checkRole(['Client']), agreementController.signAgreement);
 
+// Public/Semi-public download route (or protected if needed)
+router.get('/download/:id', agreementController.downloadAgreement);
+
 module.exports = router;
