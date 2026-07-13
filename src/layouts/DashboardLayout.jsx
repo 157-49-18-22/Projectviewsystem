@@ -95,7 +95,12 @@ const DashboardLayout = () => {
                     </button>
                 </div>
                 <nav className="sidebar-nav">
-                    <NavLink to="/dashboard" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                    <NavLink 
+                        to={userRole === 'Client' ? '/client/dashboard' : '/dashboard'} 
+                        onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} 
+                        className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}
+                        end
+                    >
                         <LayoutDashboard size={20} /> <span>Dashboard</span>
                     </NavLink>
                     {userRole === 'Admin' && (

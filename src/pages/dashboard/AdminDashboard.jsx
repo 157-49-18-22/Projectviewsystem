@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, FileText, CreditCard, FolderKanban, DollarSign, Plus, Search, Filter, UserPlus, Calendar, History } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,11 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.role === 'Client') {
+            navigate('/client/dashboard', { replace: true });
+            return;
+        }
         fetchDashboardData();
     }, []);
 
