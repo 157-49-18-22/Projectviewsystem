@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Download, PenTool, CheckCircle, Clock, Upload, Send, Users, RotateCcw, ChevronLeft, ChevronRight, Filter, Plus, Verified, RefreshCw } from 'lucide-react';
+import { FileText, Download, PenTool, CheckCircle, Clock, Upload, Send, Users, RotateCcw, ChevronLeft, ChevronRight, Filter, Plus, Verified, RefreshCw, Camera, X } from 'lucide-react';
 import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
 import './AgreementViewer.css';
@@ -23,6 +23,10 @@ const AgreementViewer = () => {
     const sigCanvas = useRef({});
     const [allAgreements, setAllAgreements] = useState([]);
     const [expandedSignature, setExpandedSignature] = useState(null);
+    const [cameraMode, setCameraMode] = useState(false);
+    const [capturedImage, setCapturedImage] = useState(null);
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
 
     // Fetch clients for admin
     useEffect(() => {
@@ -76,13 +80,13 @@ const AgreementViewer = () => {
     };
 
     const handleSign = async () => {
-        if (sigCanvas.current.isEmpty()) {
-            alert('Please sign before submitting');
+        if (!capturedImage && sigCanvas.current.isEmpty()) {
+            alert('Please sign or capture your signature before submitting');
             return;
         }
 
         setSigning(true);
-        const signatureData = sigCanvas.current.toDataURL();
+        const signatureData = capturedImage || sigCanvas.current.toDataURL();
 
         try {
             const token = localStorage.getItem('token');
@@ -96,6 +100,8 @@ const AgreementViewer = () => {
             
             setStatus('Signed');
             setShowSignModal(false);
+            setCapturedImage(null);
+            setCameraMode(false);
             // Refresh agreements
             await fetchClientAgreements();
         } catch (err) {
@@ -109,6 +115,65 @@ const AgreementViewer = () => {
     const clearSignature = () => {
         sigCanvas.current.clear();
     };
+
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'user' } 
+            });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            setCameraMode(true);
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            alert('Could not access camera. Please allow camera permissions.');
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setCameraMode(false);
+    };
+
+    const captureImage = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw circular crop
+            const size = Math.min(canvas.width, canvas.height);
+            const x = (canvas.width - size) / 2;
+            const y = (canvas.height - size) / 2;
+            
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, size / 2, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(videoRef.current, 0, 0);
+            
+            setCapturedImage(canvas.toDataURL('image/png'));
+            stopCamera();
+        }
+    };
+
+    const retakePhoto = () => {
+        setCapturedImage(null);
+        startCamera();
+    };
+
+    useEffect(() => {
+        return () => {
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
 
     const handleFileChange = (e) => {
         setAgreementFile(e.target.files[0]);
@@ -392,26 +457,101 @@ const AgreementViewer = () => {
                         <h3>Digital Signature</h3>
                         <p className="modal-desc">By signing below, you agree to all the terms and conditions mentioned in the agreement document.</p>
                         
-                        <div className="signature-pad-wrapper">
-                            <SignatureCanvas
-                                ref={sigCanvas}
-                                canvasProps={{
-                                    className: 'signature-canvas'
-                                }}
-                            />
+                        <div className="signature-methods">
                             <button 
-                                type="button" 
-                                className="clear-signature-btn"
-                                onClick={clearSignature}
+                                className={`method-btn ${!cameraMode && !capturedImage ? 'active' : ''}`}
+                                onClick={() => {
+                                    setCameraMode(false);
+                                    setCapturedImage(null);
+                                }}
                             >
-                                <RotateCcw size={16} /> Clear
+                                <PenTool size={18} /> Draw Signature
+                            </button>
+                            <button 
+                                className={`method-btn ${cameraMode || capturedImage ? 'active' : ''}`}
+                                onClick={() => {
+                                    setCapturedImage(null);
+                                    startCamera();
+                                }}
+                            >
+                                <Camera size={18} /> Camera Capture
                             </button>
                         </div>
+                        
+                        {cameraMode ? (
+                            <div className="camera-wrapper">
+                                <div className="camera-frame">
+                                    <video 
+                                        ref={videoRef} 
+                                        autoPlay 
+                                        playsInline 
+                                        muted
+                                        className="camera-feed"
+                                    />
+                                    <div className="circular-guide"></div>
+                                </div>
+                                <div className="camera-actions">
+                                    <button 
+                                        type="button" 
+                                        className="btn-secondary"
+                                        onClick={stopCamera}
+                                    >
+                                        <X size={16} /> Cancel
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="btn-primary"
+                                        onClick={captureImage}
+                                    >
+                                        <Camera size={16} /> Capture
+                                    </button>
+                                </div>
+                            </div>
+                        ) : capturedImage ? (
+                            <div className="captured-image-wrapper">
+                                <div className="captured-frame">
+                                    <img 
+                                        src={capturedImage} 
+                                        alt="Captured Signature" 
+                                        className="captured-signature"
+                                    />
+                                </div>
+                                <div className="camera-actions">
+                                    <button 
+                                        type="button" 
+                                        className="btn-secondary"
+                                        onClick={retakePhoto}
+                                    >
+                                        <RotateCcw size={16} /> Retake
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="signature-pad-wrapper">
+                                <SignatureCanvas
+                                    ref={sigCanvas}
+                                    canvasProps={{
+                                        className: 'signature-canvas'
+                                    }}
+                                />
+                                <button 
+                                    type="button" 
+                                    className="clear-signature-btn"
+                                    onClick={clearSignature}
+                                >
+                                    <RotateCcw size={16} /> Clear
+                                </button>
+                            </div>
+                        )}
                         
                         <div className="modal-actions">
                             <button 
                                 className="btn-secondary" 
-                                onClick={() => setShowSignModal(false)}
+                                onClick={() => {
+                                    setShowSignModal(false);
+                                    stopCamera();
+                                    setCapturedImage(null);
+                                }}
                                 disabled={signing}
                             >
                                 Cancel
