@@ -346,11 +346,27 @@ const AgreementViewer = () => {
                                                                     <p className="signature-label">
                                                                         {agreement.signature_data.includes('image/jpeg') ? '📷 Biometric Photo Capture' : '✍️ Digital Signature'}
                                                                     </p>
-                                                                    <div className="signature-box">
+                                                                    <div className="signature-box" style={{ 
+                                                                        width: '100%', 
+                                                                        maxWidth: '320px', 
+                                                                        height: '240px', 
+                                                                        display: 'flex', 
+                                                                        alignItems: 'center', 
+                                                                        justifyContent: 'center',
+                                                                        overflow: 'hidden',
+                                                                        borderRadius: '8px',
+                                                                        border: '2px dashed var(--border-color)',
+                                                                        background: 'var(--bg-card)'
+                                                                    }}>
                                                                         <img
                                                                             src={agreement.signature_data}
                                                                             alt="Client Signature"
-                                                                            className="signature-image"
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                objectFit: agreement.signature_data.includes('image/jpeg') ? 'cover' : 'contain',
+                                                                                borderRadius: '6px'
+                                                                            }}
                                                                         />
                                                                     </div>
                                                                     <p className="signature-date">
