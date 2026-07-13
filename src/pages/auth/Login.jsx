@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import './Login.css';
 
@@ -9,6 +9,7 @@ const Login = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Agar pehle se logged in hai to seedha dashboard pe bhejo
     useEffect(() => {
@@ -53,7 +54,8 @@ const Login = () => {
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <h2>MAYDIV</h2>
+                    <img src="/logo.png" alt="HBI" style={{ height: '80px', width: 'auto', marginBottom: '1rem' }} />
+                    <h2>HBI</h2>
                     <p>Enter your credentials to access the dashboard</p>
                 </div>
                 {error && <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
@@ -78,13 +80,20 @@ const Login = () => {
                         <div className="input-wrapper">
                             <Lock size={18} className="input-icon" />
                             <input 
-                                type="password" 
+                                type={showPassword ? 'text' : 'password'}
                                 name="password" 
                                 placeholder="••••••••"
                                 className="input-field" 
                                 required 
                                 onChange={handleChange}
                             />
+                            <button 
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 
