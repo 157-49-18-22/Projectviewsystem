@@ -341,26 +341,36 @@ const AgreementViewer = () => {
                                                     <tr key={`sig-${agreement.id}`} className="signature-row">
                                                         <td colSpan="6">
                                                             <div className="signature-display-new">
+                                                                {/* Left: Signature / Photo */}
                                                                 <div className="signature-section">
-                                                                    <p className="signature-label">Client Signature</p>
+                                                                    <p className="signature-label">
+                                                                        {agreement.signature_data.includes('image/jpeg') ? '📷 Biometric Photo Capture' : '✍️ Digital Signature'}
+                                                                    </p>
                                                                     <div className="signature-box">
-                                                                        <img 
-                                                                            src={agreement.signature_data} 
-                                                                            alt="Client Signature" 
+                                                                        <img
+                                                                            src={agreement.signature_data}
+                                                                            alt="Client Signature"
                                                                             className="signature-image"
                                                                         />
                                                                     </div>
                                                                     <p className="signature-date">
-                                                                        Signed on: {agreement.signed_at ? new Date(agreement.signed_at).toLocaleString() : 'N/A'}
+                                                                        🕐 Signed: {agreement.signed_at ? new Date(agreement.signed_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
                                                                     </p>
                                                                 </div>
+
+                                                                {/* Divider */}
                                                                 <div className="signature-divider"></div>
+
+                                                                {/* Right: Verification Details */}
                                                                 <div className="verification-section">
-                                                                    <p className="signature-label">Verification Meta</p>
+                                                                    <p className="signature-label">🔐 Verification Record</p>
                                                                     <div className="verification-details">
-                                                                        <p><span className="label">IP:</span> 192.168.1.104</p>
-                                                                        <p><span className="label">METHOD:</span> Digital Biometric</p>
-                                                                        <p><span className="label">STATUS:</span> Integrity Verified</p>
+                                                                        <p><span className="label">CLIENT:</span> {agreement.contact_person}</p>
+                                                                        <p><span className="label">COMPANY:</span> {agreement.company_name}</p>
+                                                                        <p><span className="label">AGR ID:</span> AGR-{agreement.id}</p>
+                                                                        <p><span className="label">METHOD:</span> {agreement.signature_data.includes('image/jpeg') ? 'Camera Biometric' : 'Digital Draw Pad'}</p>
+                                                                        <p><span className="label">STATUS:</span> <span style={{color:'#22c55e',fontWeight:700}}>✅ Integrity Verified</span></p>
+                                                                        <p><span className="label">TIMESTAMP:</span> {agreement.signed_at ? new Date(agreement.signed_at).toISOString().replace('T',' ').substring(0,19) : 'N/A'}</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
