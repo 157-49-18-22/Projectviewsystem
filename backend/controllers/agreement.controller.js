@@ -47,7 +47,7 @@ exports.uploadAgreement = async (req, res) => {
 
     try {
         // Upload PDF buffer directly to Cloudinary (no local disk)
-        const { url: cloudinaryUrl } = await uploadToCloudinary(req.file.buffer, 'maydiv/agreements', 'raw');
+        const { url: cloudinaryUrl } = await uploadToCloudinary(req.file.buffer, 'maydiv/agreements', 'auto');
 
         await connection.beginTransaction();
 

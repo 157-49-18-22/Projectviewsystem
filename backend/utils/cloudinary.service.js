@@ -7,13 +7,13 @@ const cloudinary = require('../config/cloudinary');
  * @param {string} resourceType - 'raw' for PDF, 'image' for images
  * @returns {Promise<{url: string, public_id: string}>}
  */
-const uploadToCloudinary = (buffer, folder = 'maydiv', resourceType = 'raw') => {
+const uploadToCloudinary = (buffer, folder = 'maydiv', resourceType = 'auto') => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
             {
                 folder,
                 resource_type: resourceType,
-                // For PDFs, use raw; for images use image
+                // For PDFs, 'auto' will typically handle them safely as 'image' or document.
             },
             (error, result) => {
                 if (error) return reject(error);
