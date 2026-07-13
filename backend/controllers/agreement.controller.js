@@ -128,14 +128,27 @@ exports.signAgreement = async (req, res) => {
         const agreement = agreements[0];
 
         // ----------------------------------------------------------
-        // Fetch the original PDF from Cloudinary URL (works on Render)
+        // Resolve PDF URL — handle both old relative paths & new Cloudinary URLs
+        // Old agreements in DB may have relative paths like /uploads/file.pdf
+        // New agreements uploaded after Cloudinary fix will have full https:// URLs
         // ----------------------------------------------------------
+        let pdfUrl = agreement.document_url;
+        if (!pdfUrl.startsWith('http')) {
+            // Old relative path — construct full URL from backend
+            const backendUrl = process.env.BACKEND_URL || 'https://projectviewsystem.onrender.com';
+            pdfUrl = `${backendUrl}${pdfUrl.startsWith('/') ? '' : '/'}${pdfUrl}`;
+        }
+
         let existingPdfBytes;
         try {
-            existingPdfBytes = await fetchFromUrl(agreement.document_url);
+            existingPdfBytes = await fetchFromUrl(pdfUrl);
         } catch (fetchErr) {
-            console.error('Failed to fetch PDF from URL:', fetchErr.message);
-            return res.status(404).json({ message: 'Agreement PDF could not be retrieved. Please contact admin to re-upload the agreement.' });
+            console.error('Failed to fetch PDF from URL:', fetchErr.message, '| URL tried:', pdfUrl);
+            // Old files on Render's ephemeral disk are deleted on every redeploy
+            // Admin needs to re-upload the agreement through the dashboard
+            return res.status(404).json({ 
+                message: 'Agreement PDF file is no longer available (server was redeployed). Please ask admin to re-upload the agreement PDF from the dashboard.' 
+            });
         }
 
         // Load the PDF and embed signature
