@@ -131,9 +131,17 @@ exports.signAgreement = async (req, res) => {
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
 
-        // Convert signature Base64 to image
-        const signatureImageBytes = Buffer.from(signature_data.replace(/^data:image\/png;base64,/, ''), 'base64');
-        const signatureImage = await pdfDoc.embedPng(signatureImageBytes);
+        // Convert signature Base64 to image (handle both PNG and JPEG)
+        const base64Data = signature_data.replace(/^data:image\/[a-z]+;base64,/, '');
+        const signatureImageBytes = Buffer.from(base64Data, 'base64');
+        
+        // Determine image type and embed accordingly
+        let signatureImage;
+        if (signature_data.includes('image/jpeg') || signature_data.includes('image/jpg')) {
+            signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
+        } else {
+            signatureImage = await pdfDoc.embedPng(signatureImageBytes);
+        }
         
         // Calculate signature position (bottom right of first page)
         const { width, height } = firstPage.getSize();
