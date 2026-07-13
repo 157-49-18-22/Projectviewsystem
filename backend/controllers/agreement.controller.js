@@ -1,9 +1,8 @@
 const pool = require('../config/db');
 const { sendEmail } = require('../utils/email.service');
-const { PDFDocument, rgb } = require('pdf-lib');
-const fs = require('fs');
-const path = require('path');
+const { PDFDocument } = require('pdf-lib');
 const notificationController = require('./notification.controller');
+const { uploadToCloudinary, fetchFromUrl } = require('../utils/cloudinary.service');
 
 // Client Action: Get Client's Agreements
 exports.getClientAgreements = async (req, res) => {
@@ -36,32 +35,34 @@ exports.getAllAgreements = async (req, res) => {
     }
 };
 
-// Admin Action: Upload Agreement
+// Admin Action: Upload Agreement (to Cloudinary)
 exports.uploadAgreement = async (req, res) => {
     const { client_id } = req.body;
-    
+
     if (!req.file) {
         return res.status(400).json({ message: 'Agreement file is required' });
     }
-    
-    const file_url = `/uploads/${req.file.filename}`;
+
     const connection = await pool.getConnection();
-    
+
     try {
+        // Upload PDF buffer directly to Cloudinary (no local disk)
+        const { url: cloudinaryUrl } = await uploadToCloudinary(req.file.buffer, 'maydiv/agreements', 'raw');
+
         await connection.beginTransaction();
 
-        // Insert agreement
+        // Insert agreement with Cloudinary URL
         await connection.query(
             'INSERT INTO agreements (client_id, document_url, status) VALUES (?, ?, ?)',
-            [client_id, file_url, 'Pending']
+            [client_id, cloudinaryUrl, 'Pending']
         );
-        
+
         // Update client status
         await connection.query(
             'UPDATE clients SET status = ? WHERE id = ?',
             ['Agreement Sent', client_id]
         );
-        
+
         // Audit log
         await connection.query(
             'INSERT INTO status_log (client_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?)',
@@ -72,12 +73,12 @@ exports.uploadAgreement = async (req, res) => {
 
         // Send email notification to client
         const [clientResult] = await connection.query('SELECT email, contact_person FROM clients WHERE id = ?', [client_id]);
-        
+
         if (clientResult.length > 0) {
             const clientEmail = clientResult[0].email;
             const clientName = clientResult[0].contact_person;
             const dashboardUrl = `${process.env.FRONTEND_URL}/login`;
-            
+
             const emailHtml = `
                 <h3>Hello ${clientName},</h3>
                 <p>A new service agreement has been sent to you by Maydiv.</p>
@@ -85,10 +86,9 @@ exports.uploadAgreement = async (req, res) => {
                 <p><strong>Dashboard URL:</strong> <a href="${dashboardUrl}">${dashboardUrl}</a></p>
                 <p>If you have any questions, please contact our support team.</p>
             `;
-            
+
             await sendEmail(clientEmail, 'New Agreement Available for Signature', 'Agreement Sent', emailHtml);
-            
-            // Create notification
+
             await notificationController.createNotification(
                 client_id,
                 'Agreement Sent',
@@ -101,7 +101,7 @@ exports.uploadAgreement = async (req, res) => {
     } catch (err) {
         await connection.rollback();
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     } finally {
         connection.release();
     }
@@ -117,41 +117,47 @@ exports.signAgreement = async (req, res) => {
         await connection.beginTransaction();
 
         // Ensure this agreement belongs to this client and is pending
-        const [agreements] = await connection.query('SELECT * FROM agreements WHERE id = ? AND client_id = ? AND status = ?', [agreement_id, client_id, 'Pending']);
+        const [agreements] = await connection.query(
+            'SELECT * FROM agreements WHERE id = ? AND client_id = ? AND status = ?',
+            [agreement_id, client_id, 'Pending']
+        );
         if (agreements.length === 0) {
             return res.status(404).json({ message: 'Agreement not found or already signed' });
         }
 
         const agreement = agreements[0];
-        // Fix: Strip leading slash so path.join works correctly on Windows
-        const cleanDocPath = agreement.document_url.replace(/^\//, '');
-        const originalPdfPath = path.join(__dirname, '..', cleanDocPath);
-        
-        // Load the original PDF
-        if (!fs.existsSync(originalPdfPath)) {
-            return res.status(404).json({ message: 'Agreement PDF file not found on server. Please contact admin.' });
+
+        // ----------------------------------------------------------
+        // Fetch the original PDF from Cloudinary URL (works on Render)
+        // ----------------------------------------------------------
+        let existingPdfBytes;
+        try {
+            existingPdfBytes = await fetchFromUrl(agreement.document_url);
+        } catch (fetchErr) {
+            console.error('Failed to fetch PDF from URL:', fetchErr.message);
+            return res.status(404).json({ message: 'Agreement PDF could not be retrieved. Please contact admin to re-upload the agreement.' });
         }
-        const existingPdfBytes = fs.readFileSync(originalPdfPath);
+
+        // Load the PDF and embed signature
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
 
-        // Convert signature Base64 to image (handle both PNG and JPEG/camera capture)
+        // Parse mime type from base64 string
         const mimeMatch = signature_data.match(/^data:(image\/[a-zA-Z+]+);base64,/);
         const mimeType = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png';
         const base64Data = signature_data.replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
         const signatureImageBytes = Buffer.from(base64Data, 'base64');
-        
-        // Determine image type and embed accordingly
+
+        // Embed signature image into PDF
         let signatureImage;
         if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
             signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
         } else {
-            // Default to PNG (canvas drawings, webp fallback)
             signatureImage = await pdfDoc.embedPng(signatureImageBytes);
         }
-        
-        // Calculate signature position (bottom right of first page)
+
+        // Draw signature at bottom-right of first page
         const { width, height } = firstPage.getSize();
         const signatureWidth = 150;
         const signatureHeight = 75;
@@ -162,16 +168,14 @@ exports.signAgreement = async (req, res) => {
             height: signatureHeight,
         });
 
-        // Save signed PDF
+        // Save signed PDF to buffer (no local disk)
         const signedPdfBytes = await pdfDoc.save();
-        const signedFilename = `signed_${agreement_id}_${Date.now()}.pdf`;
-        const signedPdfPath = path.join(__dirname, '..', 'uploads', signedFilename);
-        fs.writeFileSync(signedPdfPath, signedPdfBytes);
+        const signedPdfBuffer = Buffer.from(signedPdfBytes);
 
-        // Update agreement with signed PDF URL
-        const signedPdfUrl = `/uploads/${signedFilename}`;
+        // Upload signed PDF to Cloudinary
+        const { url: signedPdfUrl } = await uploadToCloudinary(signedPdfBuffer, 'maydiv/signed-agreements', 'raw');
 
-        // 1. Update agreement status
+        // 1. Update agreement status with Cloudinary URL
         await connection.query(
             'UPDATE agreements SET signature_data = ?, status = ?, signed_at = NOW(), document_url = ? WHERE id = ?',
             [signature_data, 'Signed', signedPdfUrl, agreement_id]
@@ -188,37 +192,35 @@ exports.signAgreement = async (req, res) => {
             'INSERT INTO status_log (client_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?)',
             [client_id, 'agreements', agreement_id, req.user.id, 'Signed Agreement']
         );
-        
+
         await connection.commit();
 
-        // 4. Send Confirmation Email to Client
+        // 4. Send Confirmation Emails (background, non-blocking)
         const [clientResult] = await connection.query('SELECT email, contact_person FROM clients WHERE id = ?', [client_id]);
-        
+
         if (clientResult.length > 0) {
             const clientEmail = clientResult[0].email;
             const clientName = clientResult[0].contact_person;
-            const emailHtml = `
+            const clientEmailHtml = `
                 <p>Thank you for signing the agreement! Your signed copy is now securely stored in your portal.</p>
                 <p>The next step is to clear the initial proforma invoice which will be available in your dashboard shortly.</p>
             `;
-            await sendEmail(clientEmail, 'Agreement Successfully Signed', 'Agreement Signed', emailHtml);
-            
-            // 5. Send Notification to Admin
-            const adminEmail = 'admin@maydiv.com';
+            sendEmail(clientEmail, 'Agreement Successfully Signed', 'Agreement Signed', clientEmailHtml).catch(console.error);
+
             const adminEmailHtml = `
                 <h3>Agreement Signed by Client</h3>
                 <p><strong>Client:</strong> ${clientName}</p>
                 <p><strong>Agreement ID:</strong> ${agreement_id}</p>
-                <p>The client has successfully signed the agreement. You can view the signed agreement in your dashboard.</p>
+                <p>The client has successfully signed the agreement. You can view it in your dashboard.</p>
             `;
-            await sendEmail(adminEmail, 'Client Signed Agreement', 'Agreement Signed Notification', adminEmailHtml);
+            sendEmail('admin@maydiv.com', 'Client Signed Agreement', 'Agreement Signed Notification', adminEmailHtml).catch(console.error);
         }
 
         res.json({ message: 'Agreement successfully signed.' });
     } catch (err) {
         await connection.rollback();
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     } finally {
         connection.release();
     }

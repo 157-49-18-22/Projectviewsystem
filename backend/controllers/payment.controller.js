@@ -1,8 +1,9 @@
 const pool = require('../config/db');
 const { sendEmail } = require('../utils/email.service');
 const notificationController = require('./notification.controller');
+const { uploadToCloudinary } = require('../utils/cloudinary.service');
 
-// Client Action: Upload Payment Proof
+// Client Action: Upload Payment Proof (to Cloudinary)
 exports.uploadPaymentProof = async (req, res) => {
     const { invoice_id } = req.body;
     const client_id = req.user.client_id;
@@ -10,9 +11,15 @@ exports.uploadPaymentProof = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Payment proof screenshot/file is required' });
     }
-    const payment_proof_url = `/uploads/${req.file.filename}`;
 
     try {
+        // Upload image buffer to Cloudinary (no local disk needed)
+        const { url: payment_proof_url } = await uploadToCloudinary(
+            req.file.buffer,
+            'maydiv/payment-proofs',
+            'image'
+        );
+
         await pool.query(
             'INSERT INTO payments (invoice_id, client_id, payment_proof_url, status) VALUES (?, ?, ?, ?)',
             [invoice_id, client_id, payment_proof_url, 'Submitted']
@@ -27,7 +34,7 @@ exports.uploadPaymentProof = async (req, res) => {
         res.status(201).json({ message: 'Payment proof uploaded successfully. Awaiting admin approval.' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
 
