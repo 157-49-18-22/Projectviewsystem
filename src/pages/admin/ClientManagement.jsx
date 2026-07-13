@@ -131,7 +131,7 @@ const ClientManagement = () => {
                         <input 
                             type="text" 
                             placeholder="Search clients..." 
-                            className="input-field search-input"
+                            className="search-input"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
