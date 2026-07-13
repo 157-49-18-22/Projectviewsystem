@@ -160,21 +160,39 @@ const AgreementViewer = () => {
     const captureImage = () => {
         if (videoRef.current) {
             const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
+            const maxSize = 800; // Max dimension for compression
+            let width = videoRef.current.videoWidth;
+            let height = videoRef.current.videoHeight;
+            
+            // Calculate dimensions to maintain aspect ratio
+            if (width > height) {
+                if (width > maxSize) {
+                    height = Math.round((height * maxSize) / width);
+                    width = maxSize;
+                }
+            } else {
+                if (height > maxSize) {
+                    width = Math.round((width * maxSize) / height);
+                    height = maxSize;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
             const ctx = canvas.getContext('2d');
             
             // Draw circular crop
-            const size = Math.min(canvas.width, canvas.height);
-            const x = (canvas.width - size) / 2;
-            const y = (canvas.height - size) / 2;
+            const size = Math.min(width, height);
+            const x = (width - size) / 2;
+            const y = (height - size) / 2;
             
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, size / 2, 0, Math.PI * 2);
+            ctx.arc(width / 2, height / 2, size / 2, 0, Math.PI * 2);
             ctx.clip();
-            ctx.drawImage(videoRef.current, 0, 0);
+            ctx.drawImage(videoRef.current, 0, 0, width, height);
             
-            setCapturedImage(canvas.toDataURL('image/png'));
+            // Compress image to JPEG with 0.7 quality
+            setCapturedImage(canvas.toDataURL('image/jpeg', 0.7));
             stopCamera();
         }
     };
