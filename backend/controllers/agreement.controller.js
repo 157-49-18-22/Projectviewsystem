@@ -123,23 +123,31 @@ exports.signAgreement = async (req, res) => {
         }
 
         const agreement = agreements[0];
-        const originalPdfPath = path.join(__dirname, '..', agreement.document_url);
+        // Fix: Strip leading slash so path.join works correctly on Windows
+        const cleanDocPath = agreement.document_url.replace(/^\//, '');
+        const originalPdfPath = path.join(__dirname, '..', cleanDocPath);
         
         // Load the original PDF
+        if (!fs.existsSync(originalPdfPath)) {
+            return res.status(404).json({ message: 'Agreement PDF file not found on server. Please contact admin.' });
+        }
         const existingPdfBytes = fs.readFileSync(originalPdfPath);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
 
-        // Convert signature Base64 to image (handle both PNG and JPEG)
-        const base64Data = signature_data.replace(/^data:image\/[a-z]+;base64,/, '');
+        // Convert signature Base64 to image (handle both PNG and JPEG/camera capture)
+        const mimeMatch = signature_data.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+        const mimeType = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png';
+        const base64Data = signature_data.replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
         const signatureImageBytes = Buffer.from(base64Data, 'base64');
         
         // Determine image type and embed accordingly
         let signatureImage;
-        if (signature_data.includes('image/jpeg') || signature_data.includes('image/jpg')) {
+        if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
             signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
         } else {
+            // Default to PNG (canvas drawings, webp fallback)
             signatureImage = await pdfDoc.embedPng(signatureImageBytes);
         }
         
