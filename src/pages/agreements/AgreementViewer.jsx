@@ -160,11 +160,10 @@ const AgreementViewer = () => {
     const captureImage = () => {
         if (videoRef.current) {
             const canvas = document.createElement('canvas');
-            const maxSize = 800; // Max dimension for compression
+            const maxSize = 800;
             let width = videoRef.current.videoWidth;
             let height = videoRef.current.videoHeight;
             
-            // Calculate dimensions to maintain aspect ratio
             if (width > height) {
                 if (width > maxSize) {
                     height = Math.round((height * maxSize) / width);
@@ -181,18 +180,13 @@ const AgreementViewer = () => {
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             
-            // Draw circular crop
-            const size = Math.min(width, height);
-            const x = (width - size) / 2;
-            const y = (height - size) / 2;
-            
-            ctx.beginPath();
-            ctx.arc(width / 2, height / 2, size / 2, 0, Math.PI * 2);
-            ctx.clip();
+            // Draw full image without circular crop for better visibility
             ctx.drawImage(videoRef.current, 0, 0, width, height);
             
             // Compress image to JPEG with 0.7 quality
-            setCapturedImage(canvas.toDataURL('image/jpeg', 0.7));
+            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+            console.log('Image captured, size:', imageData.length);
+            setCapturedImage(imageData);
             stopCamera();
         }
     };
