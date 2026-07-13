@@ -119,16 +119,33 @@ const AgreementViewer = () => {
     const startCamera = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'user' } 
+                video: { 
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                } 
             });
             streamRef.current = stream;
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
+                videoRef.current.onloadedmetadata = () => {
+                    if (videoRef.current) {
+                        videoRef.current.play();
+                    }
+                };
             }
             setCameraMode(true);
         } catch (err) {
             console.error('Error accessing camera:', err);
-            alert('Could not access camera. Please allow camera permissions.');
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                alert('Camera permission denied. Please allow camera access in your browser settings and try again.');
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                alert('No camera found. Please make sure your camera is connected and try again.');
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                alert('Camera is already in use by another application. Please close other apps using the camera and try again.');
+            } else {
+                alert('Could not access camera: ' + err.message + '. Please check your camera permissions and try again.');
+            }
         }
     };
 
