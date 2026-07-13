@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, FileText, FileSpreadsheet, CreditCard, FolderKanban, CheckSquare, LogOut, Bell, Menu, X } from 'lucide-react';
 import Notifications from '../components/Notifications';
 import axios from 'axios';
@@ -9,9 +9,11 @@ const API = 'https://projectviewsystem.onrender.com/api';
 
 const DashboardLayout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [clientStatus, setClientStatus] = useState(null);
     const [userRole, setUserRole] = useState(null);
+    const [clientName, setClientName] = useState(null);
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user')) || {};
 
@@ -48,6 +50,7 @@ const DashboardLayout = () => {
             if (res.data.length > 0) {
                 const status = res.data[0].status;
                 setClientStatus(status);
+                setClientName(res.data[0].company_name || res.data[0].name);
             }
         } catch (err) {
             console.error('Error fetching client status:', err);
@@ -76,7 +79,13 @@ const DashboardLayout = () => {
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <img src="/logo.png" alt="Logo" style={{ height: '180px', width: 'auto' }} />
+                    {userRole === 'Client' ? (
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '2px', margin: 0 }}>
+                            {clientName || 'HBI'}
+                        </h2>
+                    ) : (
+                        <img src="/logo.png" alt="Logo" style={{ height: '180px', width: 'auto' }} />
+                    )}
                     <button 
                         onClick={() => setSidebarOpen(false)} 
                         className="sidebar-close-btn"
@@ -151,7 +160,7 @@ const DashboardLayout = () => {
                 </header>
 
                 <main className="content-area">
-                    {userRole === 'Client' && !hasPaymentApproved && (
+                    {userRole === 'Client' && !hasPaymentApproved && (location.pathname === '/projects' || location.pathname === '/milestones' || location.pathname === '/reviews') && (
                         <div className="payment-reminder">
                             <div className="reminder-content">
                                 <h3>Payment Required</h3>

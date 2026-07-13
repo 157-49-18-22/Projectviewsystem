@@ -11,6 +11,7 @@ const PaymentModule = () => {
     const [payments, setPayments] = useState([]);
     const [invoices, setInvoices] = useState([]);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [selectedPaymentId, setSelectedPaymentId] = useState(null);
     const [loading, setLoading] = useState(false);
     
     const [paymentForm, setPaymentForm] = useState({
@@ -71,6 +72,7 @@ const PaymentModule = () => {
             });
             
             setShowUploadModal(false);
+            setSelectedPaymentId(null);
             setPaymentForm({ invoice_id: '', payment_proof: null });
             fetchPayments();
             alert('Payment proof uploaded successfully!');
@@ -80,6 +82,12 @@ const PaymentModule = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleResubmitPayment = (payment) => {
+        setSelectedPaymentId(payment.id);
+        setPaymentForm({ invoice_id: payment.invoice_id, payment_proof: null });
+        setShowUploadModal(true);
     };
 
     const handleFileChange = (e) => {
@@ -138,11 +146,6 @@ const PaymentModule = () => {
         <div className="module-content">
             <div className="module-header">
                 <h2>Payment Management</h2>
-                {isClient && (
-                    <button className="btn-primary" onClick={() => setShowUploadModal(true)}>
-                        <Upload size={18} /> Upload Payment Proof
-                    </button>
-                )}
             </div>
 
             <div className="card data-table-container">
@@ -232,6 +235,13 @@ const PaymentModule = () => {
                                                 </>
                                             ) : (
                                                 <>
+                                                    <button 
+                                                        className="icon-btn-small"
+                                                        title="Upload/Resubmit Payment"
+                                                        onClick={() => handleResubmitPayment(payment)}
+                                                    >
+                                                        <Upload size={16} />
+                                                    </button>
                                                     <a 
                                                         href={`http://localhost:5000${payment.payment_proof_url}`} 
                                                         target="_blank" 
@@ -266,26 +276,28 @@ const PaymentModule = () => {
             {showUploadModal && (
                 <div className="modal-overlay">
                     <div className="modal-card">
-                        <h3>Upload Payment Proof</h3>
+                        <h3>{selectedPaymentId ? 'Resubmit Payment Proof' : 'Upload Payment Proof'}</h3>
                         <form onSubmit={handleUploadPayment}>
-                            <div className="form-group">
-                                <label>Select Invoice</label>
-                                <div className="input-with-icon">
-                                    <FileText size={18} className="input-icon" />
-                                    <select
-                                        value={paymentForm.invoice_id}
-                                        onChange={(e) => setPaymentForm({ ...paymentForm, invoice_id: e.target.value })}
-                                        required
-                                    >
-                                        <option value="">Choose an invoice</option>
-                                        {invoices.map((invoice) => (
-                                            <option key={invoice.id} value={invoice.id}>
-                                                INV-{invoice.id} - ${invoice.amount} (Due: {new Date(invoice.due_date).toLocaleDateString()})
-                                            </option>
-                                        ))}
-                                    </select>
+                            {!selectedPaymentId && (
+                                <div className="form-group">
+                                    <label>Select Invoice</label>
+                                    <div className="input-with-icon">
+                                        <FileText size={18} className="input-icon" />
+                                        <select
+                                            value={paymentForm.invoice_id}
+                                            onChange={(e) => setPaymentForm({ ...paymentForm, invoice_id: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Choose an invoice</option>
+                                            {invoices.map((invoice) => (
+                                                <option key={invoice.id} value={invoice.id}>
+                                                    INV-{invoice.id} - ${invoice.amount} (Due: {new Date(invoice.due_date).toLocaleDateString()})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="form-group">
                                 <label>Payment Proof (Screenshot)</label>
@@ -302,7 +314,11 @@ const PaymentModule = () => {
                             </div>
 
                             <div className="modal-actions">
-                                <button type="button" className="btn-secondary" onClick={() => setShowUploadModal(false)}>
+                                <button type="button" className="btn-secondary" onClick={() => {
+                                    setShowUploadModal(false);
+                                    setSelectedPaymentId(null);
+                                    setPaymentForm({ invoice_id: '', payment_proof: null });
+                                }}>
                                     Cancel
                                 </button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
