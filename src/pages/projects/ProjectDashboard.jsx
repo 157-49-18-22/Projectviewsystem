@@ -44,6 +44,7 @@ const ProjectDashboard = () => {
     const [milestoneForm, setMilestoneForm] = useState({ project_id: '', milestone_name: '', description: '', attachment_url: '' });
     const [newMilestone, setNewMilestone] = useState({ name: '', description: '' });
     const [newTeamMember, setNewTeamMember] = useState({ name: '', designation: '' });
+    const [filterStatus, setFilterStatus] = useState('All');
     
     const token = localStorage.getItem('token');
 
@@ -250,6 +251,11 @@ const ProjectDashboard = () => {
         }
     };
 
+    const getFilteredProjects = () => {
+        if (filterStatus === 'All') return projects;
+        return projects.filter(p => p.status === filterStatus);
+    };
+
     const statusColor = (status) => {
         if (status === 'Working') return '#10b981';
         if (status === 'Active') return 'var(--success)';
@@ -287,11 +293,24 @@ const ProjectDashboard = () => {
 
             {/* Dashboard Filters */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-                <button style={{ padding: '0.5rem 1.25rem', borderRadius: '20px', background: 'var(--primary-color)', color: 'white', fontWeight: 600, fontSize: '0.85rem', border: 'none', cursor: 'pointer' }}>All Projects</button>
-                {['Working', 'Pending Approval', 'Completed'].map(t => (
-                    <button key={t} style={{ padding: '0.5rem 1.25rem', borderRadius: '20px', background: 'var(--bg-card)', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.85rem', border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(99,102,241,0.05)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}
+                {['All', 'Working', 'Pending Approval', 'Completed'].map(t => (
+                    <button 
+                        key={t} 
+                        onClick={() => setFilterStatus(t)}
+                        style={{ 
+                            padding: '0.5rem 1.25rem', 
+                            borderRadius: '20px', 
+                            background: filterStatus === t ? 'var(--primary-color)' : 'var(--bg-card)', 
+                            color: filterStatus === t ? 'white' : 'var(--text-muted)', 
+                            fontWeight: 600, 
+                            fontSize: '0.85rem', 
+                            border: filterStatus === t ? 'none' : '1px solid var(--border-color)', 
+                            cursor: 'pointer', 
+                            transition: 'all 0.2s', 
+                            whiteSpace: 'nowrap' 
+                        }}
+                        onMouseEnter={e => { if (filterStatus !== t) e.currentTarget.style.background = 'rgba(99,102,241,0.05)'; }}
+                        onMouseLeave={e => { if (filterStatus !== t) e.currentTarget.style.background = 'var(--bg-card)'; }}
                     >
                          {t}
                     </button>
@@ -313,16 +332,17 @@ const ProjectDashboard = () => {
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-                    {projects.map(p => {
+                    {getFilteredProjects().map(p => {
                         const total = Number(p.total_milestones) || 0;
                         const approved = Number(p.approved_milestones) || 0;
                         const pct = total > 0 ? Math.round((approved / total) * 100) : 0;
                         
                         let badgeBg, badgeColor, badgeText;
-                        if (p.status === 'Working') { badgeBg = 'rgba(16,185,129,0.15)'; badgeColor = '#10b981'; badgeText = 'WORKING'; }
+                        if (p.status === 'Completed') { badgeBg = 'rgba(16,185,129,0.15)'; badgeColor = '#10b981'; badgeText = 'COMPLETED'; }
+                        else if (p.status === 'Working') { badgeBg = 'rgba(99,102,241,0.15)'; badgeColor = '#6366f1'; badgeText = 'WORKING'; }
+                        else if (p.status === 'Active') { badgeBg = 'rgba(16,185,129,0.15)'; badgeColor = '#10b981'; badgeText = 'ACTIVE'; }
                         else if (p.status === 'Pending Approval') { badgeBg = 'rgba(245,158,11,0.15)'; badgeColor = '#f59e0b'; badgeText = 'PENDING'; }
-                        else if (p.status === 'Completed') { badgeBg = 'var(--bg-main)'; badgeColor = 'var(--text-muted)'; badgeText = 'COMPLETED'; }
-                        else { badgeBg = 'var(--bg-main)'; badgeColor = 'var(--text-muted)'; badgeText = p.status.toUpperCase(); }
+                        else { badgeBg = 'var(--bg-main)'; badgeColor = 'var(--text-muted)'; badgeText = p.status?.toUpperCase() || 'NOT STARTED'; }
 
                         return (
                         <div key={p.id} style={{
@@ -458,12 +478,14 @@ const ProjectDashboard = () => {
                                         >
                                             <Edit size={14} /> Edit
                                         </button>
-                                        <button 
-                                            className="btn-small complete-btn"
-                                            onClick={handleMarkComplete}
-                                        >
-                                            <CheckCircle size={14} /> Mark Complete
-                                        </button>
+                                        {projectDetails.project_info?.status !== 'Completed' && (
+                                            <button 
+                                                className="btn-small complete-btn"
+                                                onClick={handleMarkComplete}
+                                            >
+                                                <CheckCircle size={14} /> Mark Complete
+                                            </button>
+                                        )}
                                         <button 
                                             className="btn-small delete-btn"
                                             onClick={handleDeleteProject}

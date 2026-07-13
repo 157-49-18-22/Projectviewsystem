@@ -263,14 +263,12 @@ exports.completeProject = async (req, res) => {
         // 4. Send Review Link via Email
         const [clientResult] = await connection.query('SELECT email FROM clients WHERE id = ?', [clientId]);
         if (clientResult.length > 0) {
-            const reviewUrl = `${process.env.FRONTEND_URL}/review/${projectId}`;
             const emailHtml = `
                 <h2>Congratulations! Your Project is Complete</h2>
                 <p>The development of your project has been successfully completed and finalized.</p>
-                <p>We would really appreciate it if you could take a moment to leave a review about your experience with Maydiv:</p>
-                <a href="${reviewUrl}" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none;">Submit Final Review</a>
+                <p>Thank you for choosing Maydiv for your project needs.</p>
             `;
-            await sendEmail(clientResult[0].email, 'Project Completely Delivered! Leave a Review', 'Project Completed', emailHtml);
+            await sendEmail(clientResult[0].email, 'Project Completely Delivered!', 'Project Completed', emailHtml);
         }
 
         res.json({ message: 'Project finalized. Review email dispatched.' });

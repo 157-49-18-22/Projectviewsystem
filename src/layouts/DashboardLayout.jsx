@@ -76,7 +76,7 @@ const DashboardLayout = () => {
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    <h2>MAYDIV</h2>
+                    <img src="/logo.png" alt="Logo" style={{ height: '180px', width: 'auto' }} />
                     <button 
                         onClick={() => setSidebarOpen(false)} 
                         className="sidebar-close-btn"
