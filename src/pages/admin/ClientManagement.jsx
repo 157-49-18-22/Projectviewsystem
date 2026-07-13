@@ -205,7 +205,7 @@ const ClientManagement = () => {
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email Address</label>
-                                <input type="email" required className="input-field" placeholder="john@acme.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                                <input type="email" required className="input-field" placeholder="john@gmail.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} />
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>Phone Number</label>
