@@ -129,69 +129,69 @@ exports.signAgreement = async (req, res) => {
 
         // ----------------------------------------------------------
         // Resolve PDF URL — handle both old relative paths & new Cloudinary URLs
-        // Old agreements in DB may have relative paths like /uploads/file.pdf
-        // New agreements uploaded after Cloudinary fix will have full https:// URLs
         // ----------------------------------------------------------
         let pdfUrl = agreement.document_url;
         if (!pdfUrl.startsWith('http')) {
-            // Old relative path — construct full URL from backend
             const backendUrl = process.env.BACKEND_URL || 'https://projectviewsystem.onrender.com';
             pdfUrl = `${backendUrl}${pdfUrl.startsWith('/') ? '' : '/'}${pdfUrl}`;
         }
 
-        let existingPdfBytes;
+        // ----------------------------------------------------------
+        // Try to fetch and embed signature into PDF
+        // If PDF is unavailable (old Render ephemeral files), skip embedding
+        // and sign the agreement using just the signature_data in DB
+        // ----------------------------------------------------------
+        let finalDocumentUrl = agreement.document_url; // keep original URL as fallback
+
         try {
-            existingPdfBytes = await fetchFromUrl(pdfUrl);
-        } catch (fetchErr) {
-            console.error('Failed to fetch PDF from URL:', fetchErr.message, '| URL tried:', pdfUrl);
-            // Old files on Render's ephemeral disk are deleted on every redeploy
-            // Admin needs to re-upload the agreement through the dashboard
-            return res.status(404).json({ 
-                message: 'Agreement PDF file is no longer available (server was redeployed). Please ask admin to re-upload the agreement PDF from the dashboard.' 
+            const existingPdfBytes = await fetchFromUrl(pdfUrl);
+
+            // Parse mime type from base64 string
+            const mimeMatch = signature_data.match(/^data:(image\/[a-zA-Z+]+);base64,/);
+            const mimeType = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png';
+            const base64Data = signature_data.replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
+            const signatureImageBytes = Buffer.from(base64Data, 'base64');
+
+            // Load and embed signature into PDF
+            const pdfDoc = await PDFDocument.load(existingPdfBytes);
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+
+            let signatureImage;
+            if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+                signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
+            } else {
+                signatureImage = await pdfDoc.embedPng(signatureImageBytes);
+            }
+
+            const { width } = firstPage.getSize();
+            firstPage.drawImage(signatureImage, {
+                x: width - 170,
+                y: 20,
+                width: 150,
+                height: 75,
             });
+
+            // Upload signed PDF to Cloudinary
+            const signedPdfBytes = await pdfDoc.save();
+            const { url: signedPdfUrl } = await uploadToCloudinary(
+                Buffer.from(signedPdfBytes),
+                'maydiv/signed-agreements',
+                'raw'
+            );
+            finalDocumentUrl = signedPdfUrl; // use new signed PDF URL
+            console.log('✅ PDF signed and uploaded to Cloudinary:', signedPdfUrl);
+
+        } catch (pdfErr) {
+            // PDF unavailable (old Render file deleted) — sign without PDF embedding
+            // Signature is still stored in DB and agreement is marked Signed
+            console.warn('⚠️ PDF embedding skipped (file unavailable), signing with DB record only:', pdfErr.message);
         }
 
-        // Load the PDF and embed signature
-        const pdfDoc = await PDFDocument.load(existingPdfBytes);
-        const pages = pdfDoc.getPages();
-        const firstPage = pages[0];
-
-        // Parse mime type from base64 string
-        const mimeMatch = signature_data.match(/^data:(image\/[a-zA-Z+]+);base64,/);
-        const mimeType = mimeMatch ? mimeMatch[1].toLowerCase() : 'image/png';
-        const base64Data = signature_data.replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
-        const signatureImageBytes = Buffer.from(base64Data, 'base64');
-
-        // Embed signature image into PDF
-        let signatureImage;
-        if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-            signatureImage = await pdfDoc.embedJpg(signatureImageBytes);
-        } else {
-            signatureImage = await pdfDoc.embedPng(signatureImageBytes);
-        }
-
-        // Draw signature at bottom-right of first page
-        const { width, height } = firstPage.getSize();
-        const signatureWidth = 150;
-        const signatureHeight = 75;
-        firstPage.drawImage(signatureImage, {
-            x: width - signatureWidth - 20,
-            y: 20,
-            width: signatureWidth,
-            height: signatureHeight,
-        });
-
-        // Save signed PDF to buffer (no local disk)
-        const signedPdfBytes = await pdfDoc.save();
-        const signedPdfBuffer = Buffer.from(signedPdfBytes);
-
-        // Upload signed PDF to Cloudinary
-        const { url: signedPdfUrl } = await uploadToCloudinary(signedPdfBuffer, 'maydiv/signed-agreements', 'raw');
-
-        // 1. Update agreement status with Cloudinary URL
+        // 1. Update agreement — always runs regardless of PDF availability
         await connection.query(
             'UPDATE agreements SET signature_data = ?, status = ?, signed_at = NOW(), document_url = ? WHERE id = ?',
-            [signature_data, 'Signed', signedPdfUrl, agreement_id]
+            [signature_data, 'Signed', finalDocumentUrl, agreement_id]
         );
 
         // 2. Update client status in lifecycle
