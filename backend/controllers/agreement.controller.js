@@ -109,7 +109,7 @@ exports.uploadAgreement = async (req, res) => {
 
 // Client Action: E-Sign Agreement
 exports.signAgreement = async (req, res) => {
-    const { agreement_id, signature_data } = req.body; // signature_data is Base64
+    const { agreement_id, signature_data, client_photo } = req.body; // Both Base64
     const client_id = req.user.client_id;
     const connection = await pool.getConnection();
 
@@ -190,8 +190,8 @@ exports.signAgreement = async (req, res) => {
 
         // 1. Update agreement — always runs regardless of PDF availability
         await connection.query(
-            'UPDATE agreements SET signature_data = ?, status = ?, signed_at = NOW(), document_url = ? WHERE id = ?',
-            [signature_data, 'Signed', finalDocumentUrl, agreement_id]
+            'UPDATE agreements SET signature_data = ?, client_photo = ?, status = ?, signed_at = NOW(), document_url = ? WHERE id = ?',
+            [signature_data, client_photo, 'Signed', finalDocumentUrl, agreement_id]
         );
 
         // 2. Update client status in lifecycle

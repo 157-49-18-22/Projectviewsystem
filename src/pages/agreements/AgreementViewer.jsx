@@ -80,20 +80,26 @@ const AgreementViewer = () => {
     };
 
     const handleSign = async () => {
-        if (!capturedImage && sigCanvas.current.isEmpty()) {
-            alert('Please sign or capture your signature before submitting');
+        if (!capturedImage) {
+            alert('Please capture your photo (Step 1) before submitting.');
+            return;
+        }
+        if (sigCanvas.current && sigCanvas.current.isEmpty()) {
+            alert('Please provide your digital signature (Step 2) before submitting.');
             return;
         }
 
         setSigning(true);
-        const signatureData = capturedImage || sigCanvas.current.toDataURL();
+        const signatureData = sigCanvas.current.toDataURL();
+        const photoData = capturedImage;
 
         try {
             const token = localStorage.getItem('token');
             await axios.post('https://projectviewsystem.onrender.com/api/agreements/sign', 
                 { 
                     agreement_id: currentAgreement.id, 
-                    signature_data: signatureData 
+                    signature_data: signatureData,
+                    client_photo: photoData
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -341,38 +347,45 @@ const AgreementViewer = () => {
                                                     <tr key={`sig-${agreement.id}`} className="signature-row">
                                                         <td colSpan="6">
                                                             <div className="signature-display-new">
-                                                                {/* Left: Signature / Photo */}
+                                                                {/* Left: Drawn Signature */}
                                                                 <div className="signature-section">
-                                                                    <p className="signature-label">
-                                                                        {agreement.signature_data.includes('image/jpeg') ? '📷 Biometric Photo Capture' : '✍️ Digital Signature'}
-                                                                    </p>
+                                                                    <p className="signature-label">✍️ Digital Signature</p>
                                                                     <div className="signature-box" style={{ 
-                                                                        width: '100%', 
-                                                                        maxWidth: '320px', 
-                                                                        height: '240px', 
-                                                                        display: 'flex', 
-                                                                        alignItems: 'center', 
-                                                                        justifyContent: 'center',
-                                                                        overflow: 'hidden',
-                                                                        borderRadius: '8px',
-                                                                        border: '2px dashed var(--border-color)',
-                                                                        background: 'var(--bg-card)'
+                                                                        width: '100%', maxWidth: '280px', height: '180px', 
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'var(--bg-main)'
                                                                     }}>
-                                                                        <img
-                                                                            src={agreement.signature_data}
-                                                                            alt="Client Signature"
-                                                                            style={{
-                                                                                width: '100%',
-                                                                                height: '100%',
-                                                                                objectFit: agreement.signature_data.includes('image/jpeg') ? 'cover' : 'contain',
-                                                                                borderRadius: '6px'
-                                                                            }}
-                                                                        />
+                                                                        <img src={agreement.signature_data} alt="Drawn Signature" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                                                     </div>
                                                                     <p className="signature-date">
                                                                         🕐 Signed: {agreement.signed_at ? new Date(agreement.signed_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
                                                                     </p>
                                                                 </div>
+                                                                
+                                                                {/* Middle: Captured Photo */}
+                                                                {agreement.client_photo ? (
+                                                                    <div className="signature-section">
+                                                                        <p className="signature-label">📷 Biometric Photo Capture</p>
+                                                                        <div className="signature-box" style={{ 
+                                                                            width: '100%', maxWidth: '280px', height: '180px', 
+                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                                                                            borderRadius: '8px', border: '2px solid var(--primary-color)', background: '#000'
+                                                                        }}>
+                                                                            <img src={agreement.client_photo} alt="Client Photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="signature-section" style={{opacity: 0.5}}>
+                                                                        <p className="signature-label">📷 Biometric Photo Capture</p>
+                                                                        <div className="signature-box" style={{ 
+                                                                            width: '100%', maxWidth: '280px', height: '180px', 
+                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                            borderRadius: '8px', border: '2px dashed var(--border-color)', background: 'var(--bg-main)'
+                                                                        }}>
+                                                                            <p style={{fontSize:'0.8rem', color:'var(--text-muted)'}}>No photo captured (Old Record)</p>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
 
                                                                 {/* Divider */}
                                                                 <div className="signature-divider"></div>
@@ -384,7 +397,7 @@ const AgreementViewer = () => {
                                                                         <p><span className="label">CLIENT:</span> {agreement.contact_person}</p>
                                                                         <p><span className="label">COMPANY:</span> {agreement.company_name}</p>
                                                                         <p><span className="label">AGR ID:</span> AGR-{agreement.id}</p>
-                                                                        <p><span className="label">METHOD:</span> {agreement.signature_data.includes('image/jpeg') ? 'Camera Biometric' : 'Digital Draw Pad'}</p>
+                                                                        <p><span className="label">METHOD:</span> Biometric + Draw Pad</p>
                                                                         <p><span className="label">STATUS:</span> <span style={{color:'#22c55e',fontWeight:700}}>✅ Integrity Verified</span></p>
                                                                         <p><span className="label">TIMESTAMP:</span> {agreement.signed_at ? new Date(agreement.signed_at).toISOString().replace('T',' ').substring(0,19) : 'N/A'}</p>
                                                                     </div>
@@ -509,97 +522,69 @@ const AgreementViewer = () => {
             {showSignModal && (
                 <div className="modal-overlay">
                     <div className="modal-card signature-modal">
-                        <h3>Digital Signature</h3>
-                        <p className="modal-desc">By signing below, you agree to all the terms and conditions mentioned in the agreement document.</p>
+                        <h3>Digital Signature & Verification</h3>
+                        <p className="modal-desc">Please complete both steps to sign the agreement securely.</p>
                         
-                        <div className="signature-methods">
-                            <button 
-                                className={`method-btn ${!cameraMode && !capturedImage ? 'active' : ''}`}
-                                onClick={() => {
-                                    setCameraMode(false);
-                                    setCapturedImage(null);
-                                }}
-                            >
-                                <PenTool size={18} /> Draw Signature
-                            </button>
-                            <button 
-                                className={`method-btn ${cameraMode || capturedImage ? 'active' : ''}`}
-                                onClick={() => {
-                                    setCapturedImage(null);
-                                    startCamera();
-                                }}
-                            >
-                                <Camera size={18} /> Camera Capture
-                            </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '10px' }}>
+                            {/* Step 1: Photo Capture */}
+                            <div>
+                                <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ background: 'var(--primary-color)', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Step 1</span> 
+                                    Camera Photo Capture
+                                </h4>
+                                {!capturedImage ? (
+                                    <div className="camera-wrapper" style={{ alignItems: 'flex-start' }}>
+                                        {cameraMode ? (
+                                            <>
+                                                <div className="camera-frame" style={{ width: '100%', maxWidth: '350px', height: '260px' }}>
+                                                    <video ref={videoRef} autoPlay playsInline muted className="camera-feed" />
+                                                </div>
+                                                <div className="camera-actions" style={{ marginTop: '0.5rem' }}>
+                                                    <button type="button" className="btn-secondary" onClick={stopCamera}><X size={16} /> Cancel</button>
+                                                    <button type="button" className="btn-primary" onClick={captureImage}><Camera size={16} /> Capture Image</button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <button type="button" className="btn-secondary" onClick={() => startCamera()} style={{ width: '100%', padding: '2rem', border: '2px dashed var(--border-color)', background: 'var(--bg-main)' }}>
+                                                <Camera size={32} style={{ margin: '0 auto 1rem', color: 'var(--text-muted)' }} />
+                                                Click here to start camera
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="captured-image-wrapper" style={{ alignItems: 'flex-start' }}>
+                                        <div className="captured-frame" style={{ width: '100%', maxWidth: '350px', height: '260px', overflow: 'hidden', borderRadius: '8px' }}>
+                                            <img src={capturedImage} alt="Captured Photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                        <div className="camera-actions" style={{ marginTop: '0.5rem' }}>
+                                            <span style={{ color: '#22c55e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Verified size={16} /> Captured</span>
+                                            <button type="button" className="btn-secondary" style={{ marginLeft: '1rem', padding: '0.25rem 0.75rem', fontSize: '0.8rem' }} onClick={retakePhoto}><RotateCcw size={14} /> Retake</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)' }} />
+
+                            {/* Step 2: Digital Draw */}
+                            <div>
+                                <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ background: 'var(--primary-color)', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Step 2</span> 
+                                    Digital Signature
+                                </h4>
+                                <div className="signature-pad-wrapper" style={{ marginBottom: 0 }}>
+                                    <SignatureCanvas
+                                        ref={sigCanvas}
+                                        canvasProps={{ className: 'signature-canvas' }}
+                                    />
+                                    <button type="button" className="clear-signature-btn" onClick={clearSignature}>
+                                        <RotateCcw size={16} /> Clear
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         
-                        {cameraMode ? (
-                            <div className="camera-wrapper">
-                                <div className="camera-frame">
-                                    <video 
-                                        ref={videoRef} 
-                                        autoPlay 
-                                        playsInline 
-                                        muted
-                                        className="camera-feed"
-                                    />
-                                    <div className="circular-guide"></div>
-                                </div>
-                                <div className="camera-actions">
-                                    <button 
-                                        type="button" 
-                                        className="btn-secondary"
-                                        onClick={stopCamera}
-                                    >
-                                        <X size={16} /> Cancel
-                                    </button>
-                                    <button 
-                                        type="button" 
-                                        className="btn-primary"
-                                        onClick={captureImage}
-                                    >
-                                        <Camera size={16} /> Capture
-                                    </button>
-                                </div>
-                            </div>
-                        ) : capturedImage ? (
-                            <div className="captured-image-wrapper">
-                                <div className="captured-frame">
-                                    <img 
-                                        src={capturedImage} 
-                                        alt="Captured Signature" 
-                                        className="captured-signature"
-                                    />
-                                </div>
-                                <div className="camera-actions">
-                                    <button 
-                                        type="button" 
-                                        className="btn-secondary"
-                                        onClick={retakePhoto}
-                                    >
-                                        <RotateCcw size={16} /> Retake
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="signature-pad-wrapper">
-                                <SignatureCanvas
-                                    ref={sigCanvas}
-                                    canvasProps={{
-                                        className: 'signature-canvas'
-                                    }}
-                                />
-                                <button 
-                                    type="button" 
-                                    className="clear-signature-btn"
-                                    onClick={clearSignature}
-                                >
-                                    <RotateCcw size={16} /> Clear
-                                </button>
-                            </div>
-                        )}
-                        
-                        <div className="modal-actions">
+                        <div className="modal-actions" style={{ paddingTop: '1.5rem', marginTop: '1rem' }}>
                             <button 
                                 className="btn-secondary" 
                                 onClick={() => {
