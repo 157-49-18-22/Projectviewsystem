@@ -55,8 +55,8 @@ exports.uploadAgreement = async (req, res) => {
 
         // Insert agreement with base64 data
         const [result] = await connection.query(
-            'INSERT INTO agreements (client_id, document_data, status) VALUES (?, ?, ?)',
-            [client_id, documentData, 'Pending']
+            'INSERT INTO agreements (client_id, document_data, document_url, status) VALUES (?, ?, ?, ?)',
+            [client_id, documentData, null, 'Pending']
         );
         const agreement_id = result.insertId;
 
