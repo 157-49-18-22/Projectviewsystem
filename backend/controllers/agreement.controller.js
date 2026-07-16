@@ -267,3 +267,39 @@ exports.downloadAgreement = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+// Admin Action: Delete Agreement
+exports.deleteAgreement = async (req, res) => {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if agreement exists
+        const [agreements] = await connection.query('SELECT * FROM agreements WHERE id = ?', [id]);
+        if (agreements.length === 0) {
+            return res.status(404).json({ message: 'Agreement not found' });
+        }
+
+        const agreement = agreements[0];
+
+        // Delete agreement
+        await connection.query('DELETE FROM agreements WHERE id = ?', [id]);
+
+        // Log activity
+        await connection.query(
+            'INSERT INTO status_log (client_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?)',
+            [agreement.client_id, 'agreements', id, req.user.id, 'Deleted Agreement']
+        );
+
+        await connection.commit();
+        res.json({ message: 'Agreement deleted successfully' });
+    } catch (err) {
+        await connection.rollback();
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    } finally {
+        connection.release();
+    }
+};

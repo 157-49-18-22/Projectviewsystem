@@ -28,6 +28,25 @@ const AgreementViewer = () => {
     const videoRef = useRef(null);
     const streamRef = useRef(null);
 
+    const handleDeleteAgreement = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this agreement?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`https://projectviewsystem.onrender.com/api/agreements/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            // Refresh agreements list
+            await fetchAllAgreements();
+        } catch (err) {
+            console.error('Failed to delete agreement:', err);
+            alert('Failed to delete agreement');
+        }
+    };
+
     // Fetch clients for admin
     useEffect(() => {
         if (isAdmin) {
@@ -372,6 +391,13 @@ const AgreementViewer = () => {
                                                             >
                                                                 <Download size={18} />
                                                             </a>
+                                                            <button 
+                                                                className="icon-btn delete-btn"
+                                                                onClick={() => handleDeleteAgreement(agreement.id)}
+                                                                title="Delete"
+                                                            >
+                                                                <X size={18} />
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
