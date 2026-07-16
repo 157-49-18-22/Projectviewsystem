@@ -124,6 +124,7 @@ const AgreementViewer = () => {
 
     const startCamera = async () => {
         try {
+            console.log('Starting camera...');
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { 
                     facingMode: 'user',
@@ -131,26 +132,34 @@ const AgreementViewer = () => {
                     height: { ideal: 480 }
                 } 
             });
+            console.log('Camera stream obtained:', stream);
             streamRef.current = stream;
+            
             if (videoRef.current) {
+                console.log('Setting video srcObject...');
                 videoRef.current.srcObject = stream;
+                
                 videoRef.current.onloadedmetadata = () => {
+                    console.log('Video metadata loaded, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
                     if (videoRef.current) {
-                        videoRef.current.play().catch(err => {
+                        videoRef.current.play().then(() => {
+                            console.log('Video playing successfully');
+                            setCameraMode(true);
+                        }).catch(err => {
                             console.error('Error playing video:', err);
+                            alert('Could not play video: ' + err.message);
                         });
                     }
                 };
-                // Force video to play after a short delay
-                setTimeout(() => {
-                    if (videoRef.current) {
-                        videoRef.current.play().catch(err => {
-                            console.error('Error playing video (timeout):', err);
-                        });
-                    }
-                }, 100);
+                
+                videoRef.current.onerror = (err) => {
+                    console.error('Video error:', err);
+                    alert('Video error: ' + err.message);
+                };
+            } else {
+                console.error('Video ref is null');
+                alert('Video element not found');
             }
-            setCameraMode(true);
         } catch (err) {
             console.error('Error accessing camera:', err);
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -546,8 +555,15 @@ const AgreementViewer = () => {
                                     <div className="camera-wrapper" style={{ alignItems: 'flex-start' }}>
                                         {cameraMode ? (
                                             <>
-                                                <div className="camera-frame" style={{ width: '100%', maxWidth: '350px', height: '260px' }}>
-                                                    <video ref={videoRef} autoPlay playsInline muted className="camera-feed" />
+                                                <div className="camera-frame" style={{ width: '100%', maxWidth: '350px', height: '260px', position: 'relative' }}>
+                                                    <video 
+                                                        ref={videoRef} 
+                                                        autoPlay 
+                                                        playsInline 
+                                                        muted 
+                                                        className="camera-feed"
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
                                                 </div>
                                                 <div className="camera-actions" style={{ marginTop: '0.5rem' }}>
                                                     <button type="button" className="btn-secondary" onClick={stopCamera}><X size={16} /> Cancel</button>
