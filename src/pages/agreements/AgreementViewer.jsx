@@ -125,6 +125,8 @@ const AgreementViewer = () => {
     const startCamera = async () => {
         try {
             console.log('Starting camera...');
+            setCameraMode(true); // Set camera mode first to render video element
+            
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { 
                     facingMode: 'user',
@@ -135,31 +137,42 @@ const AgreementViewer = () => {
             console.log('Camera stream obtained:', stream);
             streamRef.current = stream;
             
-            if (videoRef.current) {
-                console.log('Setting video srcObject...');
-                videoRef.current.srcObject = stream;
-                
-                videoRef.current.onloadedmetadata = () => {
-                    console.log('Video metadata loaded, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
-                    if (videoRef.current) {
-                        videoRef.current.play().then(() => {
-                            console.log('Video playing successfully');
-                            setCameraMode(true);
-                        }).catch(err => {
-                            console.error('Error playing video:', err);
-                            alert('Could not play video: ' + err.message);
-                        });
-                    }
-                };
-                
-                videoRef.current.onerror = (err) => {
-                    console.error('Video error:', err);
-                    alert('Video error: ' + err.message);
-                };
-            } else {
-                console.error('Video ref is null');
-                alert('Video element not found');
-            }
+            // Wait for video element to be available
+            const waitForVideo = setInterval(() => {
+                if (videoRef.current) {
+                    clearInterval(waitForVideo);
+                    console.log('Video element found, setting srcObject...');
+                    videoRef.current.srcObject = stream;
+                    
+                    videoRef.current.onloadedmetadata = () => {
+                        console.log('Video metadata loaded, dimensions:', videoRef.current.videoWidth, 'x', videoRef.current.videoHeight);
+                        if (videoRef.current) {
+                            videoRef.current.play().then(() => {
+                                console.log('Video playing successfully');
+                            }).catch(err => {
+                                console.error('Error playing video:', err);
+                                alert('Could not play video: ' + err.message);
+                            });
+                        }
+                    };
+                    
+                    videoRef.current.onerror = (err) => {
+                        console.error('Video error:', err);
+                        alert('Video error: ' + err.message);
+                    };
+                }
+            }, 100);
+            
+            // Timeout after 2 seconds
+            setTimeout(() => {
+                clearInterval(waitForVideo);
+                if (!videoRef.current) {
+                    console.error('Video element not found after timeout');
+                    alert('Video element not available. Please try again.');
+                    stopCamera();
+                }
+            }, 2000);
+            
         } catch (err) {
             console.error('Error accessing camera:', err);
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
