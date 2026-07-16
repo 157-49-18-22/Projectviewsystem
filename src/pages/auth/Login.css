@@ -3,8 +3,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.8) 50%, rgba(15, 23, 42, 0.85) 100%),
-                url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.88) 50%, rgba(15, 23, 42, 0.92) 100%),
+                url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -12,17 +12,13 @@
     overflow: hidden;
 }
 
-.login-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
+/* Client-specific login styling */
+.login-container.client-login {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.88) 50%, rgba(102, 126, 234, 0.85) 100%),
+                url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 .login-card {
@@ -40,6 +36,16 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Client-specific card styling */
+.login-card.client-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 50px -12px rgba(102, 126, 234, 0.3), 
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                0 0 60px rgba(102, 126, 234, 0.2);
+}
+
 .login-header {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -55,6 +61,21 @@
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.5rem;
     text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+}
+
+/* Client-specific header styling */
+.client-card .login-header h2 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2rem;
+    letter-spacing: 1px;
+}
+
+.client-card .login-header p {
+    color: #6b7280;
+    font-weight: 500;
 }
 
 .login-header p {
@@ -177,6 +198,16 @@
 .login-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 25px rgba(139, 92, 246, 0.6);
+}
+
+/* Client-specific button styling */
+.login-btn.client-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn.client-btn:hover {
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
 }
 
 .login-btn:disabled {

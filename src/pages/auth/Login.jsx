@@ -79,11 +79,23 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-card">
+        <div className={`login-container ${isClientLogin ? 'client-login' : 'admin-login'}`}>
+            <div className={`login-card ${isClientLogin ? 'client-card' : 'admin-card'}`}>
                 <div className="login-header">
                     {isClientLogin && clientInfo ? (
                         <>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                                <div style={{ 
+                                    width: '80px', height: '80px', borderRadius: '50%', 
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+                                }}>
+                                    <span style={{ fontSize: '2rem', fontWeight: 800, color: 'white' }}>
+                                        {clientInfo.company_name.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                            </div>
                             <h2>{clientInfo.company_name || 'Client Portal'}</h2>
                             <p>Welcome back, {clientInfo.contact_person || 'Client'}</p>
                         </>
@@ -144,7 +156,7 @@ const Login = () => {
                         <a href="#" className="forgot-password">Forgot password?</a>
                     </div>
 
-                    <button type="submit" className="btn-primary login-btn" disabled={loading}>
+                    <button type="submit" className={`btn-primary login-btn ${isClientLogin ? 'client-btn' : 'admin-btn'}`} disabled={loading}>
                         <span>{loading ? 'Logging in...' : 'Login'}</span> <LogIn size={18} />
                     </button>
                 </form>
