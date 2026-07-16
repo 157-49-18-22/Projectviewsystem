@@ -141,9 +141,6 @@ const DashboardLayout = () => {
                             <CheckSquare size={20} /> <span>Audit Timeline</span>
                         </NavLink>
                     )}
-                    <NavLink to="/notifications" onClick={() => window.innerWidth <= 768 && setSidebarOpen(false)} className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-                        <Bell size={20} /> <span>Notifications</span>
-                    </NavLink>
                 </nav>
                 <div className="sidebar-footer">
                     <button className="logout-btn" onClick={handleLogout}>
