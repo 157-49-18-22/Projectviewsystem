@@ -47,11 +47,16 @@ const AdminDashboard = () => {
             console.log('Invoices data:', invoicesRes.data);
 
             // Calculate stats
-            const activeClients = clientsRes.data.filter(c => c.status === 'Active' || c.status === 'Project Active').length;
-            const runningProjects = projectsRes.data.filter(p => p.status === 'Active').length;
-            const pendingPayments = paymentsRes.data.filter(p => p.status === 'Submitted').length;
-            const totalRevenue = invoicesRes.data.filter(i => i.status === 'Paid').reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
-            const pendingAgreements = clientsRes.data.filter(c => c.status === 'Agreement Pending').length;
+            console.log('Client statuses:', clientsRes.data.map(c => ({ id: c.id, company: c.company_name, status: c.status })));
+            console.log('Project statuses:', projectsRes.data.map(p => ({ id: p.id, name: p.name, status: p.status })));
+            console.log('Payment statuses:', paymentsRes.data.map(p => ({ id: p.id, status: p.status })));
+            console.log('Invoice statuses:', invoicesRes.data.map(i => ({ id: i.id, status: i.status, amount: i.amount })));
+            
+            const activeClients = clientsRes.data.filter(c => c.status === 'Active' || c.status === 'Project Active' || c.status === 'Agreement Signed').length;
+            const runningProjects = projectsRes.data.filter(p => p.status === 'Active' || p.status === 'In Progress').length;
+            const pendingPayments = paymentsRes.data.filter(p => p.status === 'Submitted' || p.status === 'Pending').length;
+            const totalRevenue = invoicesRes.data.filter(i => i.status === 'Paid' || i.status === 'Paid').reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
+            const pendingAgreements = clientsRes.data.filter(c => c.status === 'Agreement Pending' || c.status === 'Agreement Sent').length;
 
             console.log('Calculated stats:', { activeClients, runningProjects, pendingPayments, totalRevenue, pendingAgreements });
 
