@@ -89,8 +89,10 @@ const Login = () => {
                         </>
                     ) : (
                         <>
-                            <img src="/logo.png" alt="HBI" style={{ height: '80px', width: 'auto', marginBottom: '1rem' }} />
-                            <h2>HBI</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                                <img src="/logo.png" alt="Maydiv" style={{ height: '120px', width: 'auto' }} />
+                            </div>
+                            <h2>Admin Portal</h2>
                             <p>Enter your credentials to access the dashboard</p>
                         </>
                     )}

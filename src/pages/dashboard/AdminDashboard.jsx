@@ -29,17 +29,22 @@ const AdminDashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
+            console.log('Fetching dashboard data...');
             // Fetch clients
             const clientsRes = await axios.get(`${API}/clients`, { headers: { Authorization: `Bearer ${token}` } });
+            console.log('Clients data:', clientsRes.data);
             
             // Fetch projects
             const projectsRes = await axios.get(`${API}/projects`, { headers: { Authorization: `Bearer ${token}` } });
+            console.log('Projects data:', projectsRes.data);
             
             // Fetch payments
             const paymentsRes = await axios.get(`${API}/payments`, { headers: { Authorization: `Bearer ${token}` } });
+            console.log('Payments data:', paymentsRes.data);
             
             // Fetch invoices
             const invoicesRes = await axios.get(`${API}/invoices`, { headers: { Authorization: `Bearer ${token}` } });
+            console.log('Invoices data:', invoicesRes.data);
 
             // Calculate stats
             const activeClients = clientsRes.data.filter(c => c.status === 'Active' || c.status === 'Project Active').length;
@@ -47,6 +52,8 @@ const AdminDashboard = () => {
             const pendingPayments = paymentsRes.data.filter(p => p.status === 'Submitted').length;
             const totalRevenue = invoicesRes.data.filter(i => i.status === 'Paid').reduce((sum, inv) => sum + (parseFloat(inv.amount) || 0), 0);
             const pendingAgreements = clientsRes.data.filter(c => c.status === 'Agreement Pending').length;
+
+            console.log('Calculated stats:', { activeClients, runningProjects, pendingPayments, totalRevenue, pendingAgreements });
 
             setStats({
                 clients: activeClients,
@@ -59,7 +66,8 @@ const AdminDashboard = () => {
             // Get recent clients (last 5)
             setRecentClients(clientsRes.data.slice(0, 5));
         } catch (err) {
-            console.error(err);
+            console.error('Error fetching dashboard data:', err);
+            alert('Failed to fetch dashboard data: ' + err.message);
         } finally {
             setLoading(false);
         }
