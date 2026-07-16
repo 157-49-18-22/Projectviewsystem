@@ -136,9 +136,19 @@ const AgreementViewer = () => {
                 videoRef.current.srcObject = stream;
                 videoRef.current.onloadedmetadata = () => {
                     if (videoRef.current) {
-                        videoRef.current.play();
+                        videoRef.current.play().catch(err => {
+                            console.error('Error playing video:', err);
+                        });
                     }
                 };
+                // Force video to play after a short delay
+                setTimeout(() => {
+                    if (videoRef.current) {
+                        videoRef.current.play().catch(err => {
+                            console.error('Error playing video (timeout):', err);
+                        });
+                    }
+                }, 100);
             }
             setCameraMode(true);
         } catch (err) {
