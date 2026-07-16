@@ -46,23 +46,21 @@ exports.uploadAgreement = async (req, res) => {
     const connection = await pool.getConnection();
 
     try {
-        // Convert PDF to Base64
-        const fileType = req.file.mimetype || 'application/pdf';
-        const base64Data = req.file.buffer.toString('base64');
-        const documentData = `data:${fileType};base64,${base64Data}`;
-
         await connection.beginTransaction();
 
-        // Insert agreement with base64 data
+        // Upload PDF to Cloudinary
+        const { url: documentUrl, public_id } = await uploadToCloudinary(
+            req.file.buffer,
+            'maydiv/agreements',
+            'raw'
+        );
+
+        // Insert agreement with Cloudinary URL
         const [result] = await connection.query(
-            'INSERT INTO agreements (client_id, document_data, status) VALUES (?, ?, ?)',
-            [client_id, documentData, 'Pending']
+            'INSERT INTO agreements (client_id, document_url, status) VALUES (?, ?, ?)',
+            [client_id, documentUrl, 'Pending']
         );
         const agreement_id = result.insertId;
-
-        // Dynamically create the download URL for the frontend
-        const documentUrl = `https://projectviewsystem.onrender.com/api/agreements/download/${agreement_id}`;
-        await connection.query('UPDATE agreements SET document_url = ? WHERE id = ?', [documentUrl, agreement_id]);
 
         // Update client status
         await connection.query(
@@ -245,23 +243,16 @@ exports.signAgreement = async (req, res) => {
         connection.release();
     }
 };
-// Download Agreement PDF
+// Download Agreement PDF (redirect to Cloudinary URL)
 exports.downloadAgreement = async (req, res) => {
     try {
-        const [agreements] = await pool.query('SELECT document_data FROM agreements WHERE id = ?', [req.params.id]);
-        if (agreements.length === 0 || !agreements[0].document_data) {
+        const [agreements] = await pool.query('SELECT document_url FROM agreements WHERE id = ?', [req.params.id]);
+        if (agreements.length === 0 || !agreements[0].document_url) {
             return res.status(404).json({ message: 'Document not found' });
         }
         
-        let base64Data = agreements[0].document_data;
-        if (base64Data.includes('base64,')) {
-            base64Data = base64Data.split('base64,')[1];
-        }
-        
-        const buffer = Buffer.from(base64Data, 'base64');
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="agreement_${req.params.id}.pdf"`);
-        res.send(buffer);
+        // Redirect to Cloudinary URL
+        res.redirect(agreements[0].document_url);
     } catch (err) {
         console.error('Download error:', err);
         res.status(500).json({ message: 'Server error' });
