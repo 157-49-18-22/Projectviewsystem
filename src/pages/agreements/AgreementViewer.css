@@ -51,20 +51,21 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--secondary);
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     border-radius: 0.5rem;
-   
+    color: white;
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 108, 73, 0.3);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .btn-new-agreement:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
 }
 
 .agreement-content-wrapper {
