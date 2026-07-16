@@ -60,9 +60,18 @@ const DashboardLayout = () => {
     const hasPaymentApproved = clientStatus === 'Project Active' || clientStatus === 'Active';
 
     const handleLogout = () => {
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        const userEmail = user.email;
+        
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate('/login');
+        
+        // If client was logged in, redirect to client login with email parameter
+        if (user.role === 'Client' && userEmail) {
+            navigate(`/login?email=${encodeURIComponent(userEmail)}`);
+        } else {
+            navigate('/login');
+        }
     };
 
     return (
