@@ -1,15 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import './Login.css';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [clientInfo, setClientInfo] = useState(null);
+    const [isClientLogin, setIsClientLogin] = useState(false);
+
+    // Check if this is a client login via URL parameter
+    useEffect(() => {
+        const clientEmail = searchParams.get('email');
+        if (clientEmail) {
+            setIsClientLogin(true);
+            setCredentials(prev => ({ ...prev, email: clientEmail }));
+            // Fetch client info
+            fetchClientInfo(clientEmail);
+        }
+    }, [searchParams]);
+
+    const fetchClientInfo = async (email) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`https://projectviewsystem.onrender.com/api/clients/by-email/${email}`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            if (res.data) {
+                setClientInfo(res.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch client info:', err);
+        }
+    };
 
     // Agar pehle se logged in hai to seedha dashboard pe bhejo
     useEffect(() => {
@@ -54,9 +82,18 @@ const Login = () => {
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <img src="/logo.png" alt="HBI" style={{ height: '80px', width: 'auto', marginBottom: '1rem' }} />
-                    <h2>HBI</h2>
-                    <p>Enter your credentials to access the dashboard</p>
+                    {isClientLogin && clientInfo ? (
+                        <>
+                            <h2>{clientInfo.company_name || 'Client Portal'}</h2>
+                            <p>Welcome back, {clientInfo.contact_person || 'Client'}</p>
+                        </>
+                    ) : (
+                        <>
+                            <img src="/logo.png" alt="HBI" style={{ height: '80px', width: 'auto', marginBottom: '1rem' }} />
+                            <h2>HBI</h2>
+                            <p>Enter your credentials to access the dashboard</p>
+                        </>
+                    )}
                 </div>
                 {error && <div style={{ color: 'red', textAlign: 'center', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
                 <form onSubmit={handleLogin} className="login-form">
@@ -71,6 +108,7 @@ const Login = () => {
                                 className="input-field" 
                                 required 
                                 onChange={handleChange}
+                                value={credentials.email}
                             />
                         </div>
                     </div>

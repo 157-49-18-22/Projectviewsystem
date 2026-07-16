@@ -8,6 +8,8 @@ const checkRole = require('../middleware/role.middleware');
 router.post('/', verifyToken, checkRole(['Admin']), clientController.createClient);
 // Admin, Team Members, and Clients can view clients
 router.get('/', verifyToken, checkRole(['Admin', 'Team Member', 'Client']), clientController.getAllClients);
+// Public route to get client by email (for login page customization)
+router.get('/by-email/:email', clientController.getClientByEmail);
 // Admin can update a client
 router.put('/:id', verifyToken, checkRole(['Admin']), clientController.updateClient);
 // Admin can delete a client

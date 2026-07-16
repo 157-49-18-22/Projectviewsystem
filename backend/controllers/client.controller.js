@@ -41,7 +41,7 @@ exports.createClient = async (req, res) => {
         res.status(201).json({ message: 'Client created successfully and onboarding email sent.', clientId });
 
         // Fire and forget - don't await
-        const loginUrl = `${process.env.FRONTEND_URL}/login`;
+        const loginUrl = `${process.env.FRONTEND_URL}/login?email=${encodeURIComponent(email)}`;
         const emailSubject = 'Welcome to Maydiv Dashboard - Your Account Credentials';
         const emailHtml = `
             <h3>Hello ${contact_person},</h3>
@@ -130,5 +130,20 @@ exports.deleteClient = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     } finally {
         connection.release();
+    }
+};
+
+exports.getClientByEmail = async (req, res) => {
+    const { email } = req.params;
+    
+    try {
+        const [clients] = await pool.query('SELECT * FROM clients WHERE email = ?', [email]);
+        if (clients.length === 0) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        res.json(clients[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
