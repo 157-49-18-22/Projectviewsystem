@@ -53,14 +53,14 @@ exports.uploadAgreement = async (req, res) => {
 
         await connection.beginTransaction();
 
-        // Insert agreement with base64 data
+        // Insert agreement with base64 data and placeholder URL
         const [result] = await connection.query(
             'INSERT INTO agreements (client_id, document_data, document_url, status) VALUES (?, ?, ?, ?)',
-            [client_id, documentData, null, 'Pending']
+            [client_id, documentData, 'pending', 'Pending']
         );
         const agreement_id = result.insertId;
 
-        // Dynamically create the download URL for the frontend
+        // Update with actual download URL
         const documentUrl = `https://projectviewsystem.onrender.com/api/agreements/download/${agreement_id}`;
         await connection.query('UPDATE agreements SET document_url = ? WHERE id = ?', [documentUrl, agreement_id]);
 
