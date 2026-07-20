@@ -19,8 +19,22 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Test DB Connection
 const pool = require('./config/db');
 pool.getConnection()
-    .then(connection => {
+    .then(async (connection) => {
         console.log('Connected to MySQL DB');
+        
+        // Auto-fix schema for exact connected database
+        try {
+            await connection.query('ALTER TABLE invoices ADD COLUMN document_data LONGTEXT');
+            console.log('Added document_data column to invoices table successfully.');
+        } catch(e) {
+            // Error typically means it already exists, gracefully ignore.
+        }
+        
+        try {
+            await connection.query('ALTER TABLE payments ADD COLUMN document_data LONGTEXT');
+            console.log('Added document_data column to payments table successfully.');
+        } catch(e) {}
+        
         connection.release();
     })
     .catch(err => {
