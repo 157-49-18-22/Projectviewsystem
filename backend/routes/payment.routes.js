@@ -14,4 +14,7 @@ router.post('/approve', verifyToken, checkRole(['Admin']), paymentController.han
 // Get payments (Admin: all, Client: own)
 router.get('/', verifyToken, paymentController.getPayments);
 
+// Download payment proof from DB (base64)
+router.get('/download/:id', paymentController.downloadPayment);
+
 module.exports = router;

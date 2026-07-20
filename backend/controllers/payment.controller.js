@@ -3,38 +3,50 @@ const { sendEmail } = require('../utils/email.service');
 const notificationController = require('./notification.controller');
 const { uploadToCloudinary } = require('../utils/cloudinary.service');
 
-// Client Action: Upload Payment Proof (to Cloudinary)
+// Client Action: Upload Payment Proof (Base64 Database Storage)
 exports.uploadPaymentProof = async (req, res) => {
     const { invoice_id } = req.body;
     const client_id = req.user.client_id;
+    const connection = await pool.getConnection();
 
     if (!req.file) {
+        connection.release();
         return res.status(400).json({ message: 'Payment proof screenshot/file is required' });
     }
 
     try {
-        // Upload image buffer to Cloudinary (no local disk needed)
-        const { url: payment_proof_url } = await uploadToCloudinary(
-            req.file.buffer,
-            'maydiv/payment-proofs',
-            'image'
-        );
+        await connection.beginTransaction();
 
-        await pool.query(
-            'INSERT INTO payments (invoice_id, client_id, payment_proof_url, status) VALUES (?, ?, ?, ?)',
-            [invoice_id, client_id, payment_proof_url, 'Submitted']
+        // Convert file buffer to base64 string
+        const base64Data = req.file.buffer.toString('base64');
+        const mimeType = req.file.mimetype;
+        const documentData = `data:${mimeType};base64,${base64Data}`;
+
+        // Insert payment record with pending URL
+        const [result] = await connection.query(
+            'INSERT INTO payments (invoice_id, client_id, payment_proof_url, document_data, status) VALUES (?, ?, ?, ?, ?)',
+            [invoice_id, client_id, 'pending_url', documentData, 'Submitted']
         );
+        const payment_id = result.insertId;
+
+        // Update the payment record with a dynamic URL that references this ID
+        const paymentUrl = `https://projectviewsystem.onrender.com/api/payments/download/${payment_id}`;
+        await connection.query('UPDATE payments SET payment_proof_url = ? WHERE id = ?', [paymentUrl, payment_id]);
 
         // Audit log
-        await pool.query(
+        await connection.query(
             'INSERT INTO status_log (client_id, entity_type, entity_id, changed_by, remarks) VALUES (?, ?, ?, ?, ?)',
             [client_id, 'payments', invoice_id, req.user.id, 'Uploaded Payment Proof']
         );
 
-        res.status(201).json({ message: 'Payment proof uploaded successfully. Awaiting admin approval.' });
+        await connection.commit();
+        res.status(201).json({ message: 'Payment proof uploaded successfully. Awaiting admin approval.', payment_url: paymentUrl });
     } catch (err) {
+        await connection.rollback();
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
+    } finally {
+        connection.release();
     }
 };
 
@@ -158,5 +170,35 @@ exports.getPayments = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Download payment proof from DB base64 data
+exports.downloadPayment = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [rows] = await pool.query('SELECT document_data FROM payments WHERE id = ?', [id]);
+        if (rows.length === 0 || !rows[0].document_data) {
+            return res.status(404).json({ message: 'Payment proof not found' });
+        }
+
+        const documentData = rows[0].document_data;
+        // Parse out the base64 content and mime type
+        const matches = documentData.match(/^data:(.+);base64,(.+)$/);
+        if (!matches) {
+            return res.status(500).json({ message: 'Invalid document data format' });
+        }
+
+        const mimeType = matches[1];
+        const base64Data = matches[2];
+        const fileBuffer = Buffer.from(base64Data, 'base64');
+
+        const ext = mimeType.includes('pdf') ? 'pdf' : mimeType.split('/')[1] || 'jpg';
+        res.setHeader('Content-Type', mimeType);
+        res.setHeader('Content-Disposition', `inline; filename="payment-proof-${id}.${ext}"`);
+        res.send(fileBuffer);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
