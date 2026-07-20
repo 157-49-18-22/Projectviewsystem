@@ -4,11 +4,12 @@ const { sendEmail } = require('../utils/email.service');
 // Admin Action: Generate/Send Invoice
 exports.createInvoice = async (req, res) => {
     const { client_id, amount, due_date } = req.body;
-    let file_url = null;
+    let documentData = null;
 
     if (req.file) {
-        // Cloudinary puts the full URL in path, local multer uses filename
-        file_url = req.file.path ? req.file.path : `/uploads/${req.file.filename}`;
+        const fileType = req.file.mimetype || 'application/pdf';
+        const base64Data = req.file.buffer.toString('base64');
+        documentData = `data:${fileType};base64,${base64Data}`;
     }
     
     const connection = await pool.getConnection();
@@ -18,10 +19,15 @@ exports.createInvoice = async (req, res) => {
 
         // 1. Create Invoice
         const [result] = await connection.query(
-            'INSERT INTO invoices (client_id, amount, due_date, file_url, status) VALUES (?, ?, ?, ?, ?)',
-            [client_id, amount, due_date, file_url, 'Sent']
+            'INSERT INTO invoices (client_id, amount, due_date, file_url, document_data, status) VALUES (?, ?, ?, ?, ?, ?)',
+            [client_id, amount, due_date, documentData ? 'pending_url' : null, documentData, 'Sent']
         );
         const invoice_id = result.insertId;
+
+        if (documentData) {
+            const documentUrl = `https://projectviewsystem.onrender.com/api/invoices/download/${invoice_id}`;
+            await connection.query('UPDATE invoices SET file_url = ? WHERE id = ?', [documentUrl, invoice_id]);
+        }
 
         // 2. Change client status to Payment Pending
         await connection.query(
@@ -55,6 +61,29 @@ exports.createInvoice = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     } finally {
         connection.release();
+    }
+};
+
+// Download Invoice PDF (serve base64 data)
+exports.downloadInvoice = async (req, res) => {
+    try {
+        const [invoices] = await pool.query('SELECT document_data FROM invoices WHERE id = ?', [req.params.id]);
+        if (invoices.length === 0 || !invoices[0].document_data) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+        
+        let base64Data = invoices[0].document_data;
+        if (base64Data.includes('base64,')) {
+            base64Data = base64Data.split('base64,')[1];
+        }
+        
+        const buffer = Buffer.from(base64Data, 'base64');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="invoice_${req.params.id}.pdf"`);
+        res.send(buffer);
+    } catch (err) {
+        console.error('Download error:', err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 

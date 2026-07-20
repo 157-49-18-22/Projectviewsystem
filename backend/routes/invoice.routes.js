@@ -11,6 +11,9 @@ router.post('/create', verifyToken, checkRole(['Admin']), upload.single('invoice
 // Admin only: Delete Invoice
 router.delete('/:id', verifyToken, checkRole(['Admin']), invoiceController.deleteInvoice);
 
+// Download Invoice PDF via base64
+router.get('/download/:id', invoiceController.downloadInvoice);
+
 // Accessible by Admin or Client
 router.get('/', verifyToken, invoiceController.getInvoices);
 
