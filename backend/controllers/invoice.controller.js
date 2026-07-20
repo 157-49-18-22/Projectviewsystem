@@ -156,3 +156,12 @@ exports.deleteInvoice = async (req, res) => {
         connection.release();
     }
 };
+
+exports.debugDb = async (req, res) => {
+    try {
+        const [rows] = await pool.query('DESCRIBE invoices');
+        res.json({ table: 'invoices', columns: rows });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};

@@ -17,4 +17,6 @@ router.get('/download/:id', invoiceController.downloadInvoice);
 // Accessible by Admin or Client
 router.get('/', verifyToken, invoiceController.getInvoices);
 
+router.get('/debug/db', invoiceController.debugDb);
+
 module.exports = router;
