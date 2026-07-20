@@ -11,6 +11,7 @@ const InvoiceModule = () => {
     const [invoices, setInvoices] = useState([]);
     const [clients, setClients] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showUploadPaymentModal, setShowUploadPaymentModal] = useState(false);
     const [loading, setLoading] = useState(false);
     
     const [invoiceForm, setInvoiceForm] = useState({
@@ -18,6 +19,11 @@ const InvoiceModule = () => {
         amount: '',
         due_date: '',
         invoice_file: null
+    });
+
+    const [paymentForm, setPaymentForm] = useState({
+        invoice_id: '',
+        payment_proof: null
     });
 
     useEffect(() => {
@@ -110,6 +116,43 @@ const InvoiceModule = () => {
         }
     };
 
+    const handleUploadPayment = async (e) => {
+        e.preventDefault();
+        if (!paymentForm.invoice_id || !paymentForm.payment_proof) {
+            alert('Please select an invoice and upload payment proof');
+            return;
+        }
+
+        setLoading(true);
+        const formData = new FormData();
+        formData.append('invoice_id', paymentForm.invoice_id);
+        formData.append('payment_proof', paymentForm.payment_proof);
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post('https://projectviewsystem.onrender.com/api/payments/upload', formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            
+            setShowUploadPaymentModal(false);
+            setPaymentForm({ invoice_id: '', payment_proof: null });
+            fetchInvoices();
+            alert('Payment proof uploaded successfully! Awaiting admin approval.');
+        } catch (err) {
+            console.error('Failed to upload payment:', err);
+            alert('Failed to upload payment proof');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePaymentFileChange = (e) => {
+        setPaymentForm({ ...paymentForm, payment_proof: e.target.files[0] });
+    };
+
     return (
         <div className="module-content">
             <div className="module-header">
@@ -178,6 +221,18 @@ const InvoiceModule = () => {
                                                 </>
                                             ) : (
                                                 <span className="no-file-text">No file</span>
+                                            )}
+                                            {isClient && inv.status !== 'Paid' && (
+                                                <button 
+                                                    className="icon-btn-small"
+                                                    title="Upload Payment Proof"
+                                                    onClick={() => {
+                                                        setPaymentForm({ invoice_id: inv.id, payment_proof: null });
+                                                        setShowUploadPaymentModal(true);
+                                                    }}
+                                                >
+                                                    <Upload size={16} />
+                                                </button>
                                             )}
                                             {isAdmin && (
                                                 <button 
@@ -268,6 +323,42 @@ const InvoiceModule = () => {
                                 </button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
                                     {loading ? 'Creating...' : 'Create & Send Invoice'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Upload Payment Modal For Client */}
+            {showUploadPaymentModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card">
+                        <h3>Upload Payment Proof</h3>
+                        <form onSubmit={handleUploadPayment}>
+                            <div className="form-group">
+                                <label>Payment Proof (Screenshot)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={handlePaymentFileChange}
+                                    className="file-input"
+                                    required
+                                />
+                                {paymentForm.payment_proof && (
+                                    <p className="file-name">Selected: {paymentForm.payment_proof.name}</p>
+                                )}
+                            </div>
+
+                            <div className="modal-actions">
+                                <button type="button" className="btn-secondary" onClick={() => {
+                                    setShowUploadPaymentModal(false);
+                                    setPaymentForm({ invoice_id: '', payment_proof: null });
+                                }}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn-primary" disabled={loading}>
+                                    {loading ? 'Uploading...' : 'Submit Proof'}
                                 </button>
                             </div>
                         </form>
