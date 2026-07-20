@@ -74,6 +74,13 @@ exports.createClient = async (req, res) => {
 
 exports.getAllClients = async (req, res) => {
     try {
+        // If client is calling, only return their own record
+        if (req.user.role === 'Client') {
+            const client_id = req.user.client_id;
+            const [clients] = await pool.query('SELECT * FROM clients WHERE id = ?', [client_id]);
+            return res.json(clients);
+        }
+        // Admin gets all clients
         const [clients] = await pool.query('SELECT * FROM clients ORDER BY created_at DESC');
         res.json(clients);
     } catch (err) {
