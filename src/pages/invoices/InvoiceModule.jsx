@@ -154,7 +154,7 @@ const InvoiceModule = () => {
                                     </td>
                                     <td>
                                         <div className="action-buttons">
-                                            {inv.file_url ? (
+                                            {inv.file_url && !inv.file_url.includes('undefined') ? (
                                                 <>
                                                     <a 
                                                         href={inv.file_url?.startsWith('http') ? inv.file_url : `https://projectviewsystem.onrender.com${inv.file_url}`} 

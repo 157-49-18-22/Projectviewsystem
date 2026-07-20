@@ -7,7 +7,8 @@ exports.createInvoice = async (req, res) => {
     let file_url = null;
 
     if (req.file) {
-        file_url = `/uploads/${req.file.filename}`;
+        // Cloudinary puts the full URL in path, local multer uses filename
+        file_url = req.file.path ? req.file.path : `/uploads/${req.file.filename}`;
     }
     
     const connection = await pool.getConnection();
