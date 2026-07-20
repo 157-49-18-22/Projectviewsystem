@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, Download, Eye, CheckCircle, XCircle, Clock, DollarSign, FileText, Check, X } from 'lucide-react';
 import axios from 'axios';
 import './PaymentModule.css';
@@ -214,7 +214,7 @@ const PaymentModule = () => {
                                                         </>
                                                     )}
                                                     <a 
-                                                        href={`http://localhost:5000${payment.payment_proof_url}`} 
+                                                        href={payment.payment_proof_url?.startsWith('http') ? payment.payment_proof_url : `https://projectviewsystem.onrender.com${payment.payment_proof_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"
@@ -223,7 +223,7 @@ const PaymentModule = () => {
                                                         <Eye size={16} />
                                                     </a>
                                                     <a 
-                                                        href={`http://localhost:5000${payment.payment_proof_url}`} 
+                                                        href={payment.payment_proof_url?.startsWith('http') ? payment.payment_proof_url : `https://projectviewsystem.onrender.com${payment.payment_proof_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"
@@ -243,7 +243,7 @@ const PaymentModule = () => {
                                                         <Upload size={16} />
                                                     </button>
                                                     <a 
-                                                        href={`http://localhost:5000${payment.payment_proof_url}`} 
+                                                        href={payment.payment_proof_url?.startsWith('http') ? payment.payment_proof_url : `https://projectviewsystem.onrender.com${payment.payment_proof_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"
@@ -252,7 +252,7 @@ const PaymentModule = () => {
                                                         <Eye size={16} />
                                                     </a>
                                                     <a 
-                                                        href={`http://localhost:5000${payment.payment_proof_url}`} 
+                                                        href={payment.payment_proof_url?.startsWith('http') ? payment.payment_proof_url : `https://projectviewsystem.onrender.com${payment.payment_proof_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"

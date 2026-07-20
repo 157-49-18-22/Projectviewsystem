@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Eye, FileText, Send, Upload, DollarSign, Calendar, Users, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import './InvoiceModule.css';
@@ -157,7 +157,7 @@ const InvoiceModule = () => {
                                             {inv.file_url ? (
                                                 <>
                                                     <a 
-                                                        href={`http://localhost:5000${inv.file_url}`} 
+                                                        href={inv.file_url?.startsWith('http') ? inv.file_url : `https://projectviewsystem.onrender.com${inv.file_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"
@@ -166,7 +166,7 @@ const InvoiceModule = () => {
                                                         <Eye size={16} />
                                                     </a>
                                                     <a 
-                                                        href={`http://localhost:5000${inv.file_url}`} 
+                                                        href={inv.file_url?.startsWith('http') ? inv.file_url : `https://projectviewsystem.onrender.com${inv.file_url}`} 
                                                         target="_blank" 
                                                         rel="noopener noreferrer"
                                                         className="icon-btn-small"

@@ -383,7 +383,7 @@ const AgreementViewer = () => {
                                                                 </button>
                                                             )}
                                                             <a 
-                                                                href={`https://projectviewsystem.onrender.com${agreement.document_url}`} 
+                                                                href={agreement.document_url?.startsWith('http') ? agreement.document_url : `https://projectviewsystem.onrender.com${agreement.document_url}`} 
                                                                 target="_blank" 
                                                                 rel="noopener noreferrer"
                                                                 className="icon-btn"
@@ -493,7 +493,7 @@ const AgreementViewer = () => {
                                     <p>Status: <span className={`status-${currentAgreement.status.toLowerCase()}`}>{currentAgreement.status}</span></p>
                                     
                                     <a 
-                                        href={`https://projectviewsystem.onrender.com${currentAgreement.document_url}`} 
+                                        href={currentAgreement.document_url?.startsWith('http') ? currentAgreement.document_url : `https://projectviewsystem.onrender.com${currentAgreement.document_url}`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="sign-button"
